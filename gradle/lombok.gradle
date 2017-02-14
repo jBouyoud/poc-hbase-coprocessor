@@ -1,0 +1,44 @@
+apply plugin: 'net.ltgt.apt'
+
+dependencies {
+	compileOnly "org.projectlombok:lombok:${lombok_version}"
+	apt "org.projectlombok:lombok:${lombok_version}"
+}
+
+javadoc {
+	source = fileTree('build/src-delomboked')
+}
+
+sourceSets {
+	test {
+		compileClasspath += configurations.compileOnly
+	}
+}
+
+task delombok {
+	description 'Delomboks the entire source code tree'
+	def srcDelomboked = 'build/src-delomboked'
+	def mainSrcDir = 'src/main/java'
+
+	inputs.files file(mainSrcDir)
+	outputs.dir file(srcDelomboked)
+
+	onlyIf { file(mainSrcDir).exists() }
+	doFirst { delete file(srcDelomboked) }
+	doLast {
+		ant.taskdef(
+				name: 'delombok',
+				classname: 'lombok.delombok.ant.Tasks$Delombok',
+				classpath: configurations.compileClasspath.asPath
+		)
+		ant.delombok(
+				from: mainSrcDir,
+				to: srcDelomboked,
+				encoding: System.getProperty('file.encoding', 'UTF-8'),
+				classpath: configurations.compileClasspath.asPath) {
+			format(value: 'suppressWarnings:skip')
+		}
+	}
+}
+javadoc.dependsOn delombok
+

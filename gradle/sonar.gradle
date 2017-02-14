@@ -1,0 +1,13 @@
+apply plugin: 'org.sonarqube'
+
+// Setup sonar properties
+sonarqube {
+	properties {
+		//Project configuration
+		property 'sonar.sourceEncoding', 'UTF-8'
+		property 'sonar.branch', project.branch
+		property 'sonar.exclusions', []
+		property 'sonar.jacoco.reportPaths', properties['sonar.jacoco.reportPath']
+		properties.remove 'sonar.jacoco.reportPath'
+	}
+}

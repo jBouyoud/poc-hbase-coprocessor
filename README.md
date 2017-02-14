@@ -35,6 +35,8 @@ Identified coprocessors issues are :
    Coprocessors are executed in the RegionServer JVM.
    
 1. can beak down the cluster in case of load failures  
+
+1. can break security configuration by bypass other coprocessors
     
 ## How to solve coprocessors "issues"
  
@@ -51,6 +53,7 @@ This table resume for each issue the state of the given solution :
 | comes without metrics                              | SOLVED          | SOLVED             |
 | comes without process isolation                    | UNSOLVED        | UNSOLVED           |
 | can beak down the cluster in case of load failures | PARTILLY SOLVED | UNSOLVED           |
+| can break security configuration by bypass other coprocessors | SOLVED | SOLVED |
 
 
 Those solutions are not perfect but it's try to gives a pragmatic solution to those issues.
@@ -80,6 +83,16 @@ Those solutions are not perfect but it's try to gives a pragmatic solution to th
 	Use hbase.coprocessor.aborterror = false
 	This avoid to break the entire RegionServer only Table with incriminated coprocessors are unloaded.
 
+1. __can break security configuration by bypass other coprocessors__  
+	Create a coprocessor adapter wrap ObserverContext and throw Exception when bypass and/or complete method are called.
+	And then wraps this adapter into an Java Agent class transformer to automate it.
+
 ## Setup
 
-TODO
+If you want to run integration tests outside gradle environment, you need to update `PATH` environment variable to add `workspace/developer/bin`.
+PATH=$PATH;`workspace`/developer/bin
+    
+### Run tests
+```shell 
+$ gradlew test
+```

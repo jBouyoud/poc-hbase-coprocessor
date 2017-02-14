@@ -1,0 +1,67 @@
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'maven'
+
+// Set Java specifications
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+jacoco {
+	toolVersion = "0.7.6.+"
+}
+
+jacocoTestReport {
+	group = 'Reporting'
+	description = 'Generate Jacoco coverage reports after running tests.'
+	reports {
+		xml.enabled true
+	}
+}
+
+sourceSets {
+	main {
+		runtimeClasspath += files(output.resourcesDir)
+	}
+	test {
+		runtimeClasspath += files(output.resourcesDir)
+	}
+}
+
+// Cutomize compile task
+tasks.withType(JavaCompile) {
+	options.encoding = System.getProperty('file.encoding', 'UTF-8')
+
+}
+
+// Project Naming convention
+tasks.withType(Jar) {
+	manifest {
+		// Default manifest attributes
+		attributes 'Implementation-Version': "${project.version}"
+		attributes 'Implementation-Title': "${project.name} (Branch:$project.branch)"
+		attributes 'Built-Date': new Date()
+	}
+}
+
+tasks.withType(Javadoc) {
+	options.charSet = System.getProperty('file.encoding', 'UTF-8')
+	options.encoding = System.getProperty('file.encoding', 'UTF-8')
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	description = 'Assembles a jar archive containing the sources files'
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	description = 'Assembles a jar archive containing the javadoc files'
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+// Add sources and javadoc to defaults artifacts
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
