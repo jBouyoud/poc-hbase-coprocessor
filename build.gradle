@@ -40,34 +40,36 @@ version = '01.00.00-SNAPSHOT'
 description = 'POC on Hbase coprocessors'
 
 dependencies {
-	// Hbase & Hadoop dependencies
-	compile "org.apache.hadoop:hadoop-client:${hadoop_version}"
-	compile "org.apache.hadoop:hadoop-common:${hadoop_version}"
-	compile "org.apache.hadoop:hadoop-auth:${hadoop_version}"
-	compile "org.apache.hadoop:hadoop-annotations:${hadoop_version}"
+	// Hbase dependencies
+	[	"org.apache.hbase:hbase-client:${hbase_version}",
+		"org.apache.hbase:hbase-common:${hbase_version}",
+		"org.apache.hbase:hbase-protocol:${hbase_version}",
+		"org.apache.hbase:hbase-server:${hbase_version}",
+		"org.apache.hbase:hbase-annotations:${hbase_version}"].each {
+		compile(it){
+			exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+		}
+	}
 
-	// Hbase
-	compile "org.apache.hbase:hbase-client:${hbase_version}"
-	compile "org.apache.hbase:hbase-common:${hbase_version}"
-	compile "org.apache.hbase:hbase-protocol:${hbase_version}"
-	compile "org.apache.hbase:hbase-server:${hbase_version}"
-	compile "org.apache.hbase:hbase-annotations:${hbase_version}"
-
-	// Protobuf
+	// Explicitly add Protobuf dependencies
 	compile "com.google.protobuf:protobuf-java:${protobuf_version}"
+
+	// Memory measurement utilities
+	compile 'com.github.jbellis:jamm:0.3.1'
 
 	// Testing libraries
 	testCompile 'org.assertj:assertj-core:3.6.2'
 	testCompile 'junit:junit'
-	testCompile 'junit:junit'
 	testCompile 'org.springframework:spring-core:4.3.6.RELEASE'
 
-	testCompile "org.apache.hadoop:hadoop-minicluster:${hadoop_version}"
+	// Hbase test libraries
+	testCompile("org.apache.hbase:hbase-testing-util:${hbase_version}"){
+		exclude module: 'slf4j-log4j12'
+		exclude module: 'log4j'
+	}
 
-	testCompile "org.apache.hbase:hbase-annotations:${hbase_version}:tests"
-	testCompile "org.apache.hbase:hbase-hadoop-compat:${hbase_version}:tests"
-	testCompile "org.apache.hbase:hbase-server:${hbase_version}:tests"
-	testCompile "org.apache.hbase:hbase-testing-util:${hbase_version}"
+	// Logging purpose
+	testRuntime 'org.slf4j:slf4j-log4j12:1.7.23'
 }
 
 test {
