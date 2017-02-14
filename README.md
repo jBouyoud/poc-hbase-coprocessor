@@ -2,7 +2,7 @@
 
 This POC aims to demonstrate how to solve those coprocessors "issues".
 
-It based on Hbase version : *1.2.1*.
+It based on Hbase version : *1.2.3*.
 
 ## Introduction
 
@@ -23,7 +23,7 @@ Identified coprocessors issues are :
    An exception (other than IOException) bring down region server.
    
 1. can break down the cluster in case of bad request  
-  Client retry mecanism (this is good) can propagate a fail
+  Client retry mecanism (this is good) can propagate a fail and consume resources for nothing
    
 1. hog a lot of memory/CPU   
    Coprocessors are executed in the RegionServer JVM.
@@ -45,21 +45,21 @@ But it's an heavy process (review, test, etc.).
 
 This table resume for each issue the state of the given solution :
 
-|                       Problem                      | Manual Solution | Automated Solution |
-|:--------------------------------------------------:|:---------------:|:------------------:|
-| can crash region servers.                          | SOLVED          | SOLVED             |
-| break down the cluster in case of bad request      | SOLVED          | SOLVED             |
-| hog a lot of memory/CPU                            | PARTILLY SOLVED | PARTILLYSOLVED     |
-| comes without metrics                              | SOLVED          | SOLVED             |
-| comes without process isolation                    | UNSOLVED        | UNSOLVED           |
-| can beak down the cluster in case of load failures | PARTILLY SOLVED | UNSOLVED           |
-| can break security configuration by bypass other coprocessors | SOLVED | SOLVED |
+|                       Problem                      | Manual Solution  | Automated Solution |
+|:--------------------------------------------------:|:----------------:|:------------------:|
+| can crash region servers.                          | TO DO            | TO DO              |
+| break down the cluster in case of bad request      | TO DO            | TO DO              |
+| hog a lot of memory/CPU                            | TO DO            | TO DO	             |
+| comes without metrics                              | TO DO            | TO DO              |
+| comes without process isolation                    | UNSOLVED         | UNSOLVED           |
+| can beak down the cluster in case of load failures | TO DO            | UNSOLVED           |
+| can break security configuration by bypass other coprocessors | TO DO | TO DO  			 |
 
 
 Those solutions are not perfect but it's try to gives a pragmatic solution to those issues.
 
 1. __can crash region servers__    
-	Create an coprocessor adapter that catch Throwble and rethrow it as IOException.
+	Create an coprocessor adapter that catch Throwable and rethrow it as IOException.
 	And then wraps this adapter into an Java Agent class transformer to automate it.
 	   
 1. __can break down the cluster in case of bad request__  
@@ -72,7 +72,7 @@ Those solutions are not perfect but it's try to gives a pragmatic solution to th
 	And then wraps this adapter into an Java Agent class transformer to automate it.
    
 1. __comes without metrics__  
-	Create a coprocessor adapter that implements a metrics logic and write some generics information in log3
+	Create a coprocessor adapter that implements a metrics logic and write some generics information in log
 	And then wraps this adapter into an Java Agent class transformer to automate it.
       
 1. __comes without process isolation__  
@@ -89,8 +89,11 @@ Those solutions are not perfect but it's try to gives a pragmatic solution to th
 
 ## Setup
 
-If you want to run integration tests outside gradle environment, you need to update `PATH` environment variable to add `workspace/developer/bin`.
-PATH=$PATH;`workspace`/developer/bin
+If you want to run integration tests outside gradle environment, 
+you need to update `PATH` environment variable to add `workspace/developer/bin`.
+```shell 
+$ PATH=$PATH;`workspace`/developer/bin
+```
     
 ### Run tests
 ```shell 
