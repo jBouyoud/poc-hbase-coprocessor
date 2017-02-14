@@ -1,0 +1,11 @@
+// This plugin add a branch property on current project
+
+// Get the current branch name
+def branchName = System.getenv('GIT_BRANCH') ?: ''
+if (branchName == '') {
+	def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
+	proc.in.eachLine { line -> branchName = line }
+	proc.err.eachLine { line -> println line }
+	proc.waitFor()
+}
+project.ext.branch = branchName.replaceAll('origin/', '')

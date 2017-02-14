@@ -1,0 +1,102 @@
+buildscript {
+	// Fallback use internet ones
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		jcenter()
+		maven { url 'http://repo.spring.io/plugins-release' }
+		maven { url 'http://repo.spring.io/milestone' }
+		maven { url 'https://plugins.gradle.org/m2/' }
+	}
+	project.repositories {
+		mavenLocal()
+		mavenCentral()
+		jcenter()
+		maven { url 'http://repo.spring.io/milestone' }
+		maven { url 'http://repo.spring.io/snapshot' }
+		maven { url 'https://repository.jboss.org/nexus/content/repositories/releases' }
+		maven { url 'https://oss.sonatype.org/content/repositories/releases' }
+		maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+		maven { url 'http://repo.maven.apache.org/maven2' }
+	}
+	dependencies {
+		classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2'
+		classpath 'net.ltgt.gradle:gradle-apt-plugin:0.8'
+		classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.0'
+		classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
+	}
+}
+
+apply plugin: 'idea'
+apply from: 'gradle/branch.gradle'
+apply from: 'gradle/java.gradle'
+apply from: 'gradle/lombok.gradle'
+apply from: 'gradle/sonar.gradle'
+apply from: 'gradle/protobuf.gradle'
+apply plugin: 'eu.appsatori.fatjar'
+
+group = 'org.apache.hbase'
+version = '01.00.00-SNAPSHOT'
+description = 'POC on Hbase coprocessors'
+
+dependencies {
+	// Hbase & Hadoop dependencies
+	compile "org.apache.hadoop:hadoop-client:${hadoop_version}"
+	compile "org.apache.hadoop:hadoop-common:${hadoop_version}"
+	compile "org.apache.hadoop:hadoop-auth:${hadoop_version}"
+	compile "org.apache.hadoop:hadoop-annotations:${hadoop_version}"
+
+	// Hbase
+	compile "org.apache.hbase:hbase-client:${hbase_version}"
+	compile "org.apache.hbase:hbase-common:${hbase_version}"
+	compile "org.apache.hbase:hbase-protocol:${hbase_version}"
+	compile "org.apache.hbase:hbase-server:${hbase_version}"
+	compile "org.apache.hbase:hbase-annotations:${hbase_version}"
+
+	// Protobuf
+	compile "com.google.protobuf:protobuf-java:${protobuf_version}"
+
+	// Testing libraries
+	testCompile 'org.assertj:assertj-core:3.6.2'
+	testCompile 'junit:junit'
+	testCompile 'junit:junit'
+	testCompile 'org.springframework:spring-core:4.3.6.RELEASE'
+
+	testCompile "org.apache.hadoop:hadoop-minicluster:${hadoop_version}"
+
+	testCompile "org.apache.hbase:hbase-annotations:${hbase_version}:tests"
+	testCompile "org.apache.hbase:hbase-hadoop-compat:${hbase_version}:tests"
+	testCompile "org.apache.hbase:hbase-server:${hbase_version}:tests"
+	testCompile "org.apache.hbase:hbase-testing-util:${hbase_version}"
+}
+
+test {
+	environment 'PATH', "./developer/bin;${System.getenv()['PATH']}"
+	environment 'hadoop.log.dir', ''
+	environment 'hadoop.tmp.dir', ''
+
+	ignoreFailures true
+	testLogging {
+		events 'skipped', 'failed'
+	}
+}
+
+// Upload all artifacts on our Nexus
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			repository(url: nexusUrl) {
+				authentication(userName: nexusUser, password: nexusPassword)
+			}
+			snapshotRepository(url: nexusSnapshotUrl) {
+				authentication(userName: nexusUser, password: nexusPassword)
+			}
+			uniqueVersion = false
+		}
+	}
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '3.3'
+}
+

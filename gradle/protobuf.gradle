@@ -1,0 +1,29 @@
+apply plugin: 'com.google.protobuf'
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:${protobuf_version}"
+	}
+	generatedFilesBaseDir = file('build/protobuf')
+}
+
+clean {
+	delete protobuf.generatedFilesBaseDir
+}
+
+// To include all sourceSets in the project jar
+jar {
+	sourceSets.all { sourceSet ->
+		from sourceSet.output
+		dependsOn sourceSet.getCompileTaskName('java')
+	}
+}
+
+// IDE Integration
+if (project.pluginManager.hasPlugin('idea')) {
+	idea {
+		module {
+			sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java");
+		}
+	}
+}
