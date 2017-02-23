@@ -36,7 +36,7 @@ public class ObserverStatisticsTest {
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
-		helper = HBaseHelper.getHelper();
+		helper = HBaseHelper.getHelper(null);
 	}
 
 	@AfterClass
@@ -49,7 +49,6 @@ public class ObserverStatisticsTest {
 	 */
 	@Before
 	public void initTest() throws Exception {
-		helper = HBaseHelper.getHelper();
 		helper.dropTable(TABLE_NAME_STRING);
 		helper.createTable(TABLE_NAME_STRING, 3, "colfam1", "colfam2");
 		helper.alterTable(TABLE_NAME_STRING,
@@ -64,8 +63,6 @@ public class ObserverStatisticsTest {
 				new String[]{"row1", "row2", "row3", "row4", "row5"},
 				new String[]{"colfam1", "colfam2"}, new String[]{"qual1", "qual1"},
 				new long[]{1, 2}, new String[]{"val1", "val2"});
-		LOGGER.info("Before endpoint call...");
-		helper.dump(TABLE_NAME_STRING);
 
 		table = helper.getConnection().getTable(TABLE_NAME);
 	}

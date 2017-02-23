@@ -29,7 +29,7 @@ public class CountEndpointTest {
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
-		helper = HBaseHelper.getHelper();
+		helper = HBaseHelper.getHelper(null);
 		CountTestUtil.buildCountTestTable(helper, TABLE_NAME_STRING,
 				htd -> {
 					try {

@@ -49,11 +49,11 @@ This table resume for each issue the state of the given solution :
 |:--------------------------------------------------:|:----------------:|:------------------:|
 | can crash region servers.                          | TO DO            | TO DO              |
 | break down the cluster in case of bad request      | TO DO            | TO DO              |
-| hog a lot of memory/CPU                            | TO DO            | TO DO	             |
+| hog a lot of memory/CPU                            | PARTIALLY DONE   | TO DO	             |
 | comes without metrics                              | TO DO            | TO DO              |
-| comes without process isolation                    | UNSOLVED         | UNSOLVED           |
+| comes without process isolation                    | LIMITED          | UNSOLVED           |
 | can beak down the cluster in case of load failures | TO DO            | UNSOLVED           |
-| can break security configuration by bypass other coprocessors | TO DO | TO DO  			 |
+| can break coprocessors chains (bypass/complete)    | DONE             | TO DO  			 |
 
 
 Those solutions are not perfect but it's try to gives a pragmatic solution to those issues.

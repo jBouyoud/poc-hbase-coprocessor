@@ -1,6 +1,7 @@
 package fr.poc.hbase.coprocessor.policy;
 
 import fr.poc.hbase.coprocessor.policy.handler.LoggingPolicy;
+import fr.poc.hbase.coprocessor.policy.handler.NoBypassOrCompletePolicy;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.Coprocessor;
@@ -30,11 +31,11 @@ public class CoprocessorPolicyAdapter<T extends Coprocessor> extends PolicyVerif
 		LOGGER.info("Setting up coprocessors execution policies");
 		setTimeout(TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
 		setPolicies(Arrays.asList(
-				new LoggingPolicy()
+				new LoggingPolicy(),
 				//new JmxMetricsPolicy(),
 				//new FailedRetryLimitPolicy(2),
 				//new MaxMemoryPolicy(1024 * 1024 * 10L, 500),
-				//new NoBypassOrCompletePolicy()
+				new NoBypassOrCompletePolicy()
 		));
 	}
 
