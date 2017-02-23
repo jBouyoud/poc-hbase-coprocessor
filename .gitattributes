@@ -30,3 +30,7 @@ developer/bin/* binary
 *.xls binary
 *.xlsx binary
 *.xlsm binary
+
+*.exe binary
+*.dll binary
+*.lib binary
