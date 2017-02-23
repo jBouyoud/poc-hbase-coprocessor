@@ -47,12 +47,12 @@ This table resume for each issue the state of the given solution :
 
 |                       Problem                      | Manual Solution  | Automated Solution |
 |:--------------------------------------------------:|:----------------:|:------------------:|
-| can crash region servers.                          | TO DO            | TO DO              |
+| can crash region servers.                          | DONE             | TO DO              |
 | break down the cluster in case of bad request      | TO DO            | TO DO              |
 | hog a lot of memory/CPU                            | PARTIALLY DONE   | TO DO	             |
-| comes without metrics                              | TO DO            | TO DO              |
+| comes without metrics                              | DONE             | TO DO              |
 | comes without process isolation                    | LIMITED          | UNSOLVED           |
-| can beak down the cluster in case of load failures | TO DO            | UNSOLVED           |
+| can beak down the cluster in case of load failures | DONE             | UNSOLVED           |
 | can break coprocessors chains (bypass/complete)    | DONE             | TO DO  			 |
 
 
@@ -86,6 +86,12 @@ Those solutions are not perfect but it's try to gives a pragmatic solution to th
 1. __can break security configuration by bypass other coprocessors__  
 	Create a coprocessor adapter wrap ObserverContext and throw Exception when bypass and/or complete method are called.
 	And then wraps this adapter into an Java Agent class transformer to automate it.
+
+### TODOs
+
+- Tests all coprocessors apdated methods
+- Instanciates policies from configuration
+- Use coprocessor environment to fetch configuration
 
 ## Setup
 

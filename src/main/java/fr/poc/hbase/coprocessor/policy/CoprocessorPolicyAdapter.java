@@ -1,5 +1,6 @@
 package fr.poc.hbase.coprocessor.policy;
 
+import fr.poc.hbase.coprocessor.policy.handler.MetricsPolicy;
 import fr.poc.hbase.coprocessor.policy.handler.LoggingPolicy;
 import fr.poc.hbase.coprocessor.policy.handler.NoBypassOrCompletePolicy;
 import fr.poc.hbase.coprocessor.policy.handler.TimeoutPolicy;
@@ -7,7 +8,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.CoprocessorEnvironment;
-import org.apache.hadoop.util.Time;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ public class CoprocessorPolicyAdapter<T extends Coprocessor> extends PolicyVerif
 		setPolicies(Arrays.asList(
 				new TimeoutPolicy(2, TimeUnit.SECONDS),
 				new LoggingPolicy(),
-				//new JmxMetricsPolicy(),
+				new MetricsPolicy(DefaultMetricsSystem.instance(), "Coprocessors"),
 				//new FailedRetryLimitPolicy(2),
 				//new MaxMemoryPolicy(1024 * 1024 * 10L, 500),
 				new NoBypassOrCompletePolicy()
@@ -43,12 +44,12 @@ public class CoprocessorPolicyAdapter<T extends Coprocessor> extends PolicyVerif
 
 	@Override
 	public void start(CoprocessorEnvironment env) throws IOException {
-		runWithPolicies("Coprocessor::start", () -> getAdaptee().start(env), env);
+		runWithPolicies("start", () -> getAdaptee().start(env), env);
 	}
 
 	@Override
 	public void stop(CoprocessorEnvironment env) throws IOException {
-		runWithPolicies("Coprocessor::stop", () -> getAdaptee().stop(env), env);
+		runWithPolicies("stop", () -> getAdaptee().stop(env), env);
 	}
 
 }

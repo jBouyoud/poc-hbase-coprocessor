@@ -79,7 +79,7 @@ public interface PolicyHandler {
 	 * @param method        proxied method
 	 * @param args          method arguments
 	 * @param result        method result
-	 * @param executionTime execution time in milliseconds
+	 * @param executionTime execution time in nano seconds
 	 * @param <T>           proxied object type
 	 */
 	default <T> void afterRun(@NonNull T object, @NonNull String method, @NonNull Object[] args, Object result, long executionTime) {

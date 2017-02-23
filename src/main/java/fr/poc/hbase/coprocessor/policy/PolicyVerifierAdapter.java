@@ -62,7 +62,7 @@ public class PolicyVerifierAdapter<A> {
 	private <R> R runMethodWithPolicies(@NonNull String method,
 										@NonNull Object[] args,
 										@NonNull Callable<R> callable) throws IOException {
-		final long start = System.currentTimeMillis();
+		final long start = System.nanoTime();
 		Future<R> future = null;
 		Holder<R> resultHolder = new Holder<>(null);
 
@@ -104,7 +104,7 @@ public class PolicyVerifierAdapter<A> {
 			policies.forEach(a -> a.onUnexpectedError(adaptee, method, args, th));
 			throw new IOException("An unexpected error occurred in Coprocessor method, see root cause for details", th);
 		} finally {
-			long executionTime = System.currentTimeMillis() - start;
+			long executionTime = System.nanoTime() - start;
 			policies.forEach(a -> a.afterRun(adaptee, method, args, resultHolder.held, executionTime));
 		}
 		return resultHolder.held;
