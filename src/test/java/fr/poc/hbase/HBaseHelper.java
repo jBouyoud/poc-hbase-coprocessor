@@ -5,13 +5,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.springframework.util.SocketUtils;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -21,19 +18,22 @@ import java.util.function.Consumer;
 @Slf4j
 public class HBaseHelper implements Closeable {
 
-	private Configuration configuration = null;
-	private Connection connection = null;
-	private Admin admin = null;
-	private HBaseTestingUtility utility = HBaseTestingUtility.createLocalHTU();
-
-
 	static {
 		System.setProperty("hadoop.home.dir", new File("./developer").getAbsolutePath());
 	}
 
-	protected HBaseHelper() throws Exception {
+	private Configuration configuration = null;
+	private Connection connection = null;
+	private Admin admin = null;
+	private HBaseTestingUtility utility;
+
+	protected HBaseHelper(Configuration c) throws Exception {
+		if (c != null) {
+			utility = HBaseTestingUtility.createLocalHTU(c);
+		} else {
+			utility = HBaseTestingUtility.createLocalHTU();
+		}
 		this.configuration = utility.getConfiguration();
-		//utility.setJobWithoutMRCluster();
 
 		configuration.unset("hadoop.log.dir");
 		configuration.unset("hadoop.tmp.dir");
@@ -41,25 +41,11 @@ public class HBaseHelper implements Closeable {
 		configuration.set("dfs.replication", "1");
 		configuration.set("dfs.blocksize", "10m");
 
-//		configuration.set("zookeeper.session.timeout", "60000");
-//		configuration.set("hbase.zookeeper.quorum", "127.0.0.1");
-
-//		Integer[] freePorts = SocketUtils.findAvailableTcpPorts(3).toArray(new Integer[3]);
-//		configuration.set("test.hbase.zookeeper.property.clientPort", Integer.toString(freePorts[0]));
-//		configuration.set("hbase.zookeeper.property.clientPort", Integer.toString(freePorts[0]));
-//		configuration.set("hbase.master.port", Integer.toString(freePorts[1]));
-//		configuration.set("hbase.master.info.port", Integer.toString(freePorts[2]));
-
-//		configuration.set("hbase.zookeeper.property.maxClientCnxns", "100");
 		configuration.set("hbase.replication", "false");
-//		configuration.set("hbase.splitlog.manager.unassigned.timeout", "999999999");
-//		configuration.set("hbase.splitlog.manager.timeoutmonitor.period", "99999999");
-//		configuration.set("hbase.connection.timeout", "5000");
 		configuration.set("hbase.rpc.timeout", "60000");
-//		configuration.set("hbase.client.scanner.timeout.period", "60000");
-		configuration.set("hbase.client.retries.number","5");
-		//FIXME hbase.coprocessor.aborterror = false
-//		configuration.set("hbase.cells.scanned.per.heartbeat.check", "10000");
+		configuration.set("hbase.client.retries.number", "15");
+		configuration.set("hbase.coprocessor.aborterror", "false");
+
 		configuration.reloadConfiguration();
 
 		// Create and start the cluster
@@ -71,8 +57,8 @@ public class HBaseHelper implements Closeable {
 		this.admin = utility.getHBaseAdmin();
 	}
 
-	public static HBaseHelper getHelper() throws Exception {
-		return new HBaseHelper();
+	public static HBaseHelper getHelper(Configuration c) throws Exception {
+		return new HBaseHelper(c);
 	}
 
 	@Override
@@ -257,9 +243,9 @@ public class HBaseHelper implements Closeable {
 					String colName = "col-" + padNum(col, pad);
 					String val = "val-" + (random ?
 							Integer.toString(rnd.nextInt(numCols)) :
-						padNum(row, pad) + "." + padNum(col, pad));
-						if (setTimestamp) {
-							put.addColumn(Bytes.toBytes(cf), Bytes.toBytes(colName), col,
+							padNum(row, pad) + "." + padNum(col, pad));
+					if (setTimestamp) {
+						put.addColumn(Bytes.toBytes(cf), Bytes.toBytes(colName), col,
 								Bytes.toBytes(val));
 					} else {
 						put.addColumn(Bytes.toBytes(cf), Bytes.toBytes(colName),

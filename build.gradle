@@ -60,7 +60,6 @@ dependencies {
 	// Testing libraries
 	testCompile 'org.assertj:assertj-core:3.6.2'
 	testCompile 'junit:junit'
-	testCompile 'org.springframework:spring-core:4.3.6.RELEASE'
 
 	// Hbase test libraries
 	testCompile("org.apache.hbase:hbase-testing-util:${hbase_version}"){
