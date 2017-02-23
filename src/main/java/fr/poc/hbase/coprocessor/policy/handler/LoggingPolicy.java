@@ -30,7 +30,7 @@ public class LoggingPolicy implements PolicyHandler {
 
 	@Override
 	public <T> void onUnexpectedError(@NonNull T object, @NonNull String method, @NonNull Object[] args, @NonNull Throwable throwable){
-		LOGGER.error("Method [{}] has been executed on [{}] with an error [{}]", method, object, throwable);
+		LOGGER.error("Method [{}] has been executed on [{}] with an unexpected error [{}]", method, object, throwable);
 	}
 
 	@Override

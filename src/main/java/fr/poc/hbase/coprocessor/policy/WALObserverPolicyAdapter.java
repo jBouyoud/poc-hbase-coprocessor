@@ -30,7 +30,7 @@ public class WALObserverPolicyAdapter extends CoprocessorPolicyAdapter<WALObserv
 	@Override
 	public boolean preWALWrite(ObserverContext<? extends WALCoprocessorEnvironment> ctx,
 							   HRegionInfo info, WALKey logKey, WALEdit logEdit) throws IOException {
-		return runWithPolicies("WALObserver::preWALWrite",
+		return runWithPolicies("WALObserver:preWALWrite",
 				() -> getAdaptee().preWALWrite(argumentWithPolicies(ctx), info, logKey, logEdit),
 				ctx, info, logKey, logEdit);
 	}
@@ -39,7 +39,7 @@ public class WALObserverPolicyAdapter extends CoprocessorPolicyAdapter<WALObserv
 	@SuppressWarnings("deprecation")
 	public boolean preWALWrite(ObserverContext<WALCoprocessorEnvironment> ctx, HRegionInfo info,
 							   HLogKey logKey, WALEdit logEdit) throws IOException {
-		return runWithPolicies("WALObserver::preWALWrite(deprecated)",
+		return runWithPolicies("WALObserver:preWALWrite(deprecated)",
 				() -> getAdaptee().preWALWrite(argumentWithPolicies(ctx), info, logKey, logEdit),
 				ctx, info, logKey, logEdit);
 	}
@@ -47,7 +47,7 @@ public class WALObserverPolicyAdapter extends CoprocessorPolicyAdapter<WALObserv
 	@Override
 	public void postWALWrite(ObserverContext<? extends WALCoprocessorEnvironment> ctx,
 							 HRegionInfo info, WALKey logKey, WALEdit logEdit) throws IOException {
-		runWithPolicies("WALObserver::postWALWrite",
+		runWithPolicies("WALObserver:postWALWrite",
 				() -> getAdaptee().postWALWrite(argumentWithPolicies(ctx), info, logKey, logEdit),
 				ctx, info, logKey, logEdit);
 	}
@@ -56,7 +56,7 @@ public class WALObserverPolicyAdapter extends CoprocessorPolicyAdapter<WALObserv
 	@SuppressWarnings("deprecation")
 	public void postWALWrite(ObserverContext<WALCoprocessorEnvironment> ctx,
 							 HRegionInfo info, HLogKey logKey, WALEdit logEdit) throws IOException {
-		runWithPolicies("WALObserver::postWALWrite(deprecated)",
+		runWithPolicies("WALObserver:postWALWrite(deprecated)",
 				() -> getAdaptee().postWALWrite(argumentWithPolicies(ctx), info, logKey, logEdit),
 				ctx, info, logKey, logEdit);
 	}
