@@ -28,7 +28,7 @@ public class CoprocessorServicePolicyAdapter<T extends CoprocessorService & Copr
 
 	@Override
 	public Service getService() {
-		return new CoprocessorServicePolicyAdapter.ServiceAdapter(getAdaptee().getService(), getTimeout(), getPolicies());
+		return new CoprocessorServicePolicyAdapter.ServiceAdapter(getAdaptee().getService(), getPolicies());
 	}
 
 	/**
@@ -40,12 +40,10 @@ public class CoprocessorServicePolicyAdapter<T extends CoprocessorService & Copr
 		 * Constructor
 		 *
 		 * @param adaptee service adaptee
-		 * @param timeout  Policy method timeout in milliseconds
 		 * @param policies policies to check
 		 */
-		public ServiceAdapter(Service adaptee, long timeout, @NonNull List<PolicyHandler> policies) {
+		public ServiceAdapter(Service adaptee, @NonNull List<PolicyHandler> policies) {
 			super(adaptee);
-			setTimeout(timeout);
 			setPolicies(policies);
 		}
 
