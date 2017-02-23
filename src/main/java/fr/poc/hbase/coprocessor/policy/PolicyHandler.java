@@ -27,10 +27,9 @@ public interface PolicyHandler {
 	 * @param object  proxied object
 	 * @param method  proxied method
 	 * @param args    method arguments
-	 * @param timeout execution timeout in milliseconds
 	 * @param <T>     proxied object type
 	 */
-	default <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args, long timeout) {
+	default <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) {
 		// No operation
 	}
 

@@ -19,8 +19,8 @@ public class LoggingPolicy implements PolicyHandler {
 	}
 
 	@Override
-	public <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args, long timeout) {
-		LOGGER.debug("Method [{}] will be executed on [{}] with [{}] arguments and with [{}] ms timeout", method, object, args.length, timeout);
+	public <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) {
+		LOGGER.debug("Method [{}] will be executed on [{}] with [{}] arguments", method, object, args.length);
 	}
 
 	@Override

@@ -3,7 +3,9 @@ package fr.poc.hbase.coprocessor.policy;
 import fr.poc.hbase.coprocessor.policy.util.CallableWithIOException;
 import fr.poc.hbase.coprocessor.policy.util.RunnableWithIOException;
 import fr.poc.hbase.coprocessor.policy.util.WrappedIOException;
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hdfs.util.Holder;
 
@@ -43,15 +45,6 @@ public class PolicyVerifierAdapter<A> {
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	/**
-	 * Policy method timeout in milliseconds
-	 * <p><= 0 means no timeout</p>
-	 * Default : 0
-	 */
-	@Getter
-	@Setter(AccessLevel.PROTECTED)
-	private long timeout = 0;
-
-	/**
 	 * policies to check
 	 */
 	private List<PolicyHandler> policies = new ArrayList<>();
@@ -75,7 +68,7 @@ public class PolicyVerifierAdapter<A> {
 
 		try {
 			//Execute before handlers
-			policies.forEach(a -> a.beforeRun(adaptee, method, args, timeout));
+			policies.forEach(a -> a.beforeRun(adaptee, method, args));
 
 			// Start the execution
 			future = executor.submit(callable);
@@ -85,20 +78,25 @@ public class PolicyVerifierAdapter<A> {
 			policies.forEach(a -> a.running(adaptee, method, args, theFuture));
 
 			// Fetch result
-			if (timeout <= 0) {
-				resultHolder.held = future.get();
-			} else {
-				resultHolder.held = future.get(timeout, TimeUnit.MILLISECONDS);
-			}
-		} catch (WrappedIOException e) {
-			LOGGER.trace("Rethrow a wrapped IOException in coprocessor execution flow", e);
-			IOException ioE = e.getCause();
-			policies.forEach(a -> a.onError(adaptee, method, args, ioE));
-			throw ioE;
-		} catch (TimeoutException e) {
+			resultHolder.held = future.get();
+		} catch (ExecutionException executionEx) {
 			future.cancel(true);
-			policies.forEach(a -> a.onUnexpectedError(adaptee, method, args, e));
-			throw new IOException("coprocessor method has spend to much time to execute, see root cause for details", e);
+			LOGGER.trace("An error occurred while trying to execute " + method + " on " + adaptee, executionEx);
+
+			Throwable th = executionEx.getCause();
+			if (th instanceof WrappedIOException) {
+				IOException ioEx = ((WrappedIOException) th).getCause();
+				policies.forEach(a -> a.onError(adaptee, method, args, ioEx));
+				throw ioEx;
+			}
+			if (th instanceof IOException) {
+				IOException ioEx = (IOException) th;
+				policies.forEach(a -> a.onError(adaptee, method, args, ioEx));
+				throw ioEx;
+			}
+
+			policies.forEach(a -> a.onUnexpectedError(adaptee, method, args, th));
+			throw new IOException("coprocessor method has spend to much time to execute, see root cause for details", th);
 		} catch (Throwable th) {
 			if (future != null) {
 				future.cancel(true);
