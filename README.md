@@ -48,7 +48,7 @@ This table resume for each issue the state of the given solution :
 |                       Problem                      | Manual Solution  | Automated Solution |
 |:--------------------------------------------------:|:----------------:|:------------------:|
 | can crash region servers.                          | DONE             | TO DO              |
-| break down the cluster in case of bad request      | TO DO            | TO DO              |
+| break down the cluster in case of bad request      | DONE             | TO DO              |
 | hog a lot of memory/CPU                            | PARTIALLY DONE   | TO DO	             |
 | comes without metrics                              | DONE             | TO DO              |
 | comes without process isolation                    | LIMITED          | UNSOLVED           |
@@ -89,9 +89,11 @@ Those solutions are not perfect but it's try to gives a pragmatic solution to th
 
 ### TODOs
 
-- Tests all coprocessors apdated methods
+- Tests all coprocessors adapted methods
+- Improve tests
 - Instanciates policies from configuration
 - Use coprocessor environment to fetch configuration
+- Implements an Hbase cluster wide fails cache (maybe based on an Hbase table?) 
 
 ## Setup
 

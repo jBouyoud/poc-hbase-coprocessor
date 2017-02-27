@@ -4,6 +4,7 @@ import fr.poc.hbase.HBaseHelper;
 import fr.poc.hbase.coprocessor.exemple.RegionObserverWithBypassExample;
 import fr.poc.hbase.coprocessor.exemple.RegionObserverWithCompleteExample;
 import fr.poc.hbase.coprocessor.policy.RegionObserverPolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.handler.LimitRetryPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -38,7 +39,7 @@ public class NoBypassOrCompletePolicyTest {
 	 *
 	 * @throws Throwable
 	 */
-	@Test(expected = RetriesExhaustedException.class)
+	@Test(expected = LimitRetryPolicy.ServerSideRetriesExhaustedException.class)
 	public void testBypassPolicy() throws Throwable {
 		Configuration conf = HBaseConfiguration.create();
 		conf.set("hbase.coprocessor.region.classes", SafeBypass.class.getName());
@@ -72,7 +73,7 @@ public class NoBypassOrCompletePolicyTest {
 	 *
 	 * @throws Throwable
 	 */
-	@Test(expected = RetriesExhaustedException.class)
+	@Test(expected = LimitRetryPolicy.ServerSideRetriesExhaustedException.class)
 	public void testCompletePolicy() throws Throwable {
 		Configuration conf = HBaseConfiguration.create();
 		conf.set("hbase.coprocessor.region.classes", SafeComplete.class.getName());

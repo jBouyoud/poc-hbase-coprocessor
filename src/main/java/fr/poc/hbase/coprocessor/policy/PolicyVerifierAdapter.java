@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.hbase.DoNotRetryIOException;
+import org.apache.hadoop.hbase.HBaseIOException;
 import org.apache.hadoop.hdfs.util.Holder;
 
 import java.io.IOException;
@@ -68,7 +70,9 @@ public class PolicyVerifierAdapter<A> {
 
 		try {
 			//Execute before handlers
-			policies.forEach(a -> a.beforeRun(adaptee, method, args));
+			for (PolicyHandler handler : policies) {
+				handler.beforeRun(adaptee, method, args);
+			}
 
 			// Start the execution
 			future = executor.submit(callable);
@@ -79,6 +83,10 @@ public class PolicyVerifierAdapter<A> {
 
 			// Fetch result
 			resultHolder.held = future.get();
+		} catch (IOException ioe) {
+			throw ioe;
+		} catch (CancellationException cancel){
+			throw new DoNotRetryIOException("coprocessor method has spend to much time to execute, see root cause for details", cancel);
 		} catch (ExecutionException executionEx) {
 			future.cancel(true);
 			LOGGER.trace("An error occurred while trying to execute " + method + " on " + adaptee, executionEx);
@@ -96,13 +104,13 @@ public class PolicyVerifierAdapter<A> {
 			}
 
 			policies.forEach(a -> a.onUnexpectedError(adaptee, method, args, th));
-			throw new IOException("coprocessor method has spend to much time to execute, see root cause for details", th);
+			throw new HBaseIOException("An unexpected error occurred in Coprocessor method, see root cause for details", th);
 		} catch (Throwable th) {
 			if (future != null) {
 				future.cancel(true);
 			}
 			policies.forEach(a -> a.onUnexpectedError(adaptee, method, args, th));
-			throw new IOException("An unexpected error occurred in Coprocessor method, see root cause for details", th);
+			throw new HBaseIOException("An unexpected error occurred in Coprocessor method, see root cause for details", th);
 		} finally {
 			long executionTime = System.nanoTime() - start;
 			policies.forEach(a -> a.afterRun(adaptee, method, args, resultHolder.held, executionTime));
@@ -163,6 +171,28 @@ public class PolicyVerifierAdapter<A> {
 			}
 		});
 	}
+
+	/**
+	 * Close policies
+	 */
+	protected void closePolicies() throws IOException {
+		Holder<Throwable> errorHolder = new Holder<>(null);
+		policies.forEach(policyHandler -> {
+			try {
+				policyHandler.close();
+			} catch (Throwable th) {
+				LOGGER.error("An unexpected error occurred while closing coprocessor policy", th);
+				errorHolder.held = th;
+			}
+		});
+		if (errorHolder.held != null) {
+			if (errorHolder.held instanceof IOException) {
+				throw (IOException) errorHolder.held;
+			}
+			throw new HBaseIOException("An unexpected error occurred while closing coprocessor policies, see root cause for details", errorHolder.held);
+		}
+	}
+
 
 	/**
 	 * Return the current policies

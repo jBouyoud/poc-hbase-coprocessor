@@ -2,13 +2,14 @@ package fr.poc.hbase.coprocessor.policy;
 
 import lombok.NonNull;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Future;
 
 /**
  * Execution policy interface, able to implements various execution policy
  */
-public interface PolicyHandler {
+public interface PolicyHandler extends Closeable {
 
 	/**
 	 * Call on method arguments where policies should be applied
@@ -24,12 +25,12 @@ public interface PolicyHandler {
 	/**
 	 * Call before method execution
 	 *
-	 * @param object  proxied object
-	 * @param method  proxied method
-	 * @param args    method arguments
-	 * @param <T>     proxied object type
+	 * @param object proxied object
+	 * @param method proxied method
+	 * @param args   method arguments
+	 * @param <T>    proxied object type
 	 */
-	default <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) {
+	default <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) throws IOException {
 		// No operation
 	}
 
@@ -85,4 +86,10 @@ public interface PolicyHandler {
 	default <T> void afterRun(@NonNull T object, @NonNull String method, @NonNull Object[] args, Object result, long executionTime) {
 		// No operation
 	}
+
+	@Override
+	default void close() throws IOException {
+		// No operation
+	}
+
 }
