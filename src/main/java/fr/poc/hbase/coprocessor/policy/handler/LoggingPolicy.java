@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Simple logging policy
@@ -19,7 +20,7 @@ public class LoggingPolicy implements PolicyHandler {
 	}
 
 	@Override
-	public <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) {
+	public <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) throws IOException {
 		LOGGER.debug("Method [{}] will be executed on [{}] with [{}] arguments", method, object, args.length);
 	}
 
@@ -29,12 +30,13 @@ public class LoggingPolicy implements PolicyHandler {
 	}
 
 	@Override
-	public <T> void onUnexpectedError(@NonNull T object, @NonNull String method, @NonNull Object[] args, @NonNull Throwable throwable){
+	public <T> void onUnexpectedError(@NonNull T object, @NonNull String method, @NonNull Object[] args, @NonNull Throwable throwable) {
 		LOGGER.error("Method [{}] has been executed on [{}] with an unexpected error [{}]", method, object, throwable);
 	}
 
 	@Override
 	public <T> void afterRun(@NonNull T object, @NonNull String method, @NonNull Object[] args, Object result, long executionTime) {
-		LOGGER.info("Method [{}] has been executed on [{}] in [{}]ms with [{}] as result", method, object, executionTime, result);
+		LOGGER.info("Method [{}] has been executed on [{}] in [{}]ms with [{}] as result", method, object,
+				TimeUnit.MILLISECONDS.convert(executionTime, TimeUnit.NANOSECONDS), result);
 	}
 }

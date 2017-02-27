@@ -11,8 +11,8 @@ import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.metrics2.lib.Interns.info;
@@ -39,10 +39,10 @@ public class MetricsPolicy implements PolicyHandler {
 	/**
 	 * Metrics tmp store
 	 */
-	private final Map<String, MetricInfo> metrics = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, MetricInfo> metrics = new ConcurrentHashMap<>();
 
 	@Override
-	public <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) {
+	public <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) throws IOException {
 		String metricName = getMetricName(object, method);
 
 		if (!metrics.containsKey(metricName)) {
