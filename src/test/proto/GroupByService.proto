@@ -1,0 +1,26 @@
+option java_package = "fr.poc.hbase.coprocessor.generated";
+option java_outer_classname = "GroupByProtos";
+option java_generic_services = true;
+option java_generate_equals_and_hash = true;
+option optimize_for = SPEED;
+
+message Value {
+	required bytes key = 1;
+	required int64 count = 2 [default = 0];
+	required bytes rowkeyStart = 3;
+	required bytes rowkeyEnd = 4;
+}
+
+message GroupByRequest {
+	required bytes family = 1;
+	required bytes column = 2;
+	required int32 matchLength = 3;
+}
+
+message GroupByResponse {
+	repeated Value values = 1;
+}
+
+service GroupByService {
+	rpc call (GroupByRequest) returns (GroupByResponse);
+}
