@@ -242,7 +242,7 @@ public class HBaseHelper implements Closeable {
 				for (String cf : colfams) {
 					String colName = "col-" + padNum(col, pad);
 					String val = "val-" + (random ?
-							Integer.toString(rnd.nextInt(numCols)) :
+							String.format("%04d", rnd.nextInt(10000)) :
 							padNum(row, pad) + "." + padNum(col, pad));
 					if (setTimestamp) {
 						put.addColumn(Bytes.toBytes(cf), Bytes.toBytes(colName), col,
