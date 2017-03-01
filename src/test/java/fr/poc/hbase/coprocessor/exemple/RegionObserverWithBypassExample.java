@@ -26,7 +26,7 @@ public class RegionObserverWithBypassExample extends BaseRegionObserver {
 
 	@Override
 	public void preGetOp(ObserverContext<RegionCoprocessorEnvironment> e, Get get, List<Cell> results) throws IOException {
-		LOGGER.debug("Got preGet for row: " + Bytes.toStringBinary(get.getRow()));
+		LOGGER.trace("Got preGet for row: " + Bytes.toStringBinary(get.getRow()));
 
 		if (Bytes.equals(get.getRow(), FIXED_ROW)) {
 			long time = System.currentTimeMillis();
