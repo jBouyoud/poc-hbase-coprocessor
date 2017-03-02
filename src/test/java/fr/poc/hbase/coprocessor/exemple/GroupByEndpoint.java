@@ -14,7 +14,9 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorException;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorService;
 import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
+import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
+import org.apache.hadoop.hbase.protobuf.generated.FilterProtos;
 import org.apache.hadoop.hbase.regionserver.InternalScanner;
 
 import java.io.IOException;
@@ -53,7 +55,7 @@ public final class GroupByEndpoint extends GroupByProtos.GroupByService implemen
 
 		GroupByProtos.GroupByResponse response = null;
 		try {
-			response = scanGroupByCount(request.getFamily().toByteArray(), request.getColumn().toByteArray(), request.getMatchLength());
+			response = scanGroupByCount(request.getFamily().toByteArray(), request.getColumn().toByteArray(), request.getMatchLength(), request.hasFilter() ? request.getFilter() : null);
 		} catch (IOException e) {
 			ResponseConverter.setControllerException(controller, e);
 		}
@@ -66,13 +68,17 @@ public final class GroupByEndpoint extends GroupByProtos.GroupByService implemen
 	 * @param family column family to group
 	 * @param column column to group
 	 * @param length length of value prefix to match
+	 * @param filter filters to add to scan
 	 * @return GroupBy response
 	 */
-	private GroupByProtos.GroupByResponse scanGroupByCount(byte[] family, byte[] column, int length) throws IOException {
+	private GroupByProtos.GroupByResponse scanGroupByCount(byte[] family, byte[] column, int length, FilterProtos.Filter filter) throws IOException {
 		long count = 0;
 
 		// Create scan
 		final Scan scan = new Scan();
+		if (filter != null) {
+			scan.setFilter(ProtobufUtil.toFilter(filter));
+		}
 
 		// Execute scan
 		try (

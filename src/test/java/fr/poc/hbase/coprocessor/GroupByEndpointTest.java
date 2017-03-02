@@ -10,6 +10,10 @@ import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.RegexStringComparator;
+import org.apache.hadoop.hbase.filter.ValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -83,10 +87,26 @@ public class GroupByEndpointTest {
 	@Test
 	public void testEndpoint() throws Throwable {
 		long start = System.currentTimeMillis();
-		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupBy(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null);
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupBy(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, null);
 		assertThat(values.size()).as("Groups count").isEqualTo(100);
 		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(100);
 		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isEqualTo(ROW_COUNT);
+		LOGGER.info("GroupByEndpointTest:testEndpoint executed in [{}]ms", System.currentTimeMillis() - start);
+	}
+
+	/**
+	 * Simple use of endpoint, with filters
+	 *
+	 * @throws Throwable
+	 */
+	@Test
+	public void testEndpointWithFilters() throws Throwable {
+		long start = System.currentTimeMillis();
+		Filter filter = new ValueFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator("^val-[02468]\\d*$"));
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupBy(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, filter);
+		assertThat(values.size()).as("Groups count").isEqualTo(50);
+		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(50);
+		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isLessThan(ROW_COUNT);
 		LOGGER.info("GroupByEndpointTest:testEndpoint executed in [{}]ms", System.currentTimeMillis() - start);
 	}
 }
