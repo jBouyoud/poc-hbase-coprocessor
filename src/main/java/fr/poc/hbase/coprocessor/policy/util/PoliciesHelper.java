@@ -2,6 +2,7 @@ package fr.poc.hbase.coprocessor.policy.util;
 
 import fr.poc.hbase.coprocessor.policy.Policy;
 import fr.poc.hbase.coprocessor.policy.PolicyInvocationHandler;
+import fr.poc.hbase.coprocessor.policy.adapter.CoprocessorPolicyAdapter;
 import fr.poc.hbase.coprocessor.policy.config.PoliciesConfigurer;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -31,7 +32,10 @@ public class PoliciesHelper {
 	 */
 	public static Coprocessor withPolicies(@NonNull Coprocessor coprocessor, int priority,
 										   @NonNull Configuration configuration) {
-
+		// Do not apply policies when they are already sets
+		if (coprocessor instanceof CoprocessorPolicyAdapter) {
+			return coprocessor;
+		}
 		// If coprocessor is at system level, check if it's an hbase ones
 		if (priority <= org.apache.hadoop.hbase.Coprocessor.PRIORITY_SYSTEM
 				&& coprocessor.getClass().getName().startsWith(Coprocessor.class.getPackage().getName())) {
@@ -47,6 +51,7 @@ public class PoliciesHelper {
 	 *
 	 * @param coprocessor Coprocessor where policies should be applied
 	 * @param policies    Policies to apply
+	 * @param <T>         Coprocessor type
 	 * @return apadated coprocessor with policies
 	 */
 	@SuppressWarnings("unchecked")
