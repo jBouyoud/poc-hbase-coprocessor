@@ -1,5 +1,6 @@
-package fr.poc.hbase.coprocessor.policy;
+package fr.poc.hbase.coprocessor.policy.adapter;
 
+import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.coprocessor.ObserverContext;
@@ -10,9 +11,10 @@ import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.wal.WALKey;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
- * {@link WALObserver} adapter that wrap all calls to be sure there is "safe".
+ * {@link WALObserver} adapter that wrap all calls to be sure there is "safe" according to the given policies
  * <br>
  * See {@link CoprocessorPolicyAdapter} for more details.
  */
@@ -21,10 +23,11 @@ public class WALObserverPolicyAdapter extends CoprocessorPolicyAdapter<WALObserv
 	/**
 	 * Constructor
 	 *
-	 * @param adaptee WAL observer adaptee
+	 * @param adaptee  coprocessor adaptee
+	 * @param policies default policies to apply
 	 */
-	public WALObserverPolicyAdapter(@NonNull WALObserver adaptee) {
-		super(adaptee);
+	public WALObserverPolicyAdapter(@NonNull WALObserver adaptee, @NonNull List<Policy> policies) {
+		super(adaptee, policies);
 	}
 
 	@Override

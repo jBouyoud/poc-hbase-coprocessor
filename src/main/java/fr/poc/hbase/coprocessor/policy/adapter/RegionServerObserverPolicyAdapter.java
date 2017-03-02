@@ -1,5 +1,6 @@
-package fr.poc.hbase.coprocessor.policy;
+package fr.poc.hbase.coprocessor.policy.adapter;
 
+import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.CellScanner;
@@ -16,22 +17,22 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * {@link RegionServerObserver} runWithPolicieser that wrap all calls to be sure there is "safe".
+ * {@link RegionServerObserver} adapter that wrap all calls to be sure there is "safe" according to the given policies
  * <br>
  * See {@link CoprocessorPolicyAdapter} for more details.
  */
 @Slf4j
-public class RegionServerObserverPolicyAdapter extends CoprocessorPolicyAdapter<RegionServerObserver> implements RegionServerObserver {
+public class RegionServerObserverPolicyAdapter<T extends RegionServerObserver> extends CoprocessorPolicyAdapter<T> implements RegionServerObserver {
 
 	/**
 	 * Constructor
 	 *
-	 * @param runWithPoliciesee region server observer runWithPoliciesee
+	 * @param adaptee  coprocessor adaptee
+	 * @param policies default policies to apply
 	 */
-	public RegionServerObserverPolicyAdapter(@NonNull RegionServerObserver runWithPoliciesee) {
-		super(runWithPoliciesee);
+	public RegionServerObserverPolicyAdapter(@NonNull T adaptee, @NonNull List<Policy> policies) {
+		super(adaptee, policies);
 	}
-
 
 	@Override
 	public void preStopRegionServer(ObserverContext<RegionServerCoprocessorEnvironment> env) throws IOException {

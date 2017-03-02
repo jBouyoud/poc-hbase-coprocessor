@@ -1,6 +1,6 @@
-package fr.poc.hbase.coprocessor.policy.handler;
+package fr.poc.hbase.coprocessor.policy.impl;
 
-import fr.poc.hbase.coprocessor.policy.PolicyHandler;
+import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class TimeoutPolicy implements PolicyHandler {
+public class TimeoutPolicy implements Policy {
 
 	/**
 	 * the execution timeout

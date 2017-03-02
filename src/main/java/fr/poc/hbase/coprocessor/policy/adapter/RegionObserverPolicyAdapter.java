@@ -1,6 +1,7 @@
-package fr.poc.hbase.coprocessor.policy;
+package fr.poc.hbase.coprocessor.policy.adapter;
 
 import com.google.common.collect.ImmutableList;
+import fr.poc.hbase.coprocessor.policy.Policy;
 import fr.poc.hbase.coprocessor.policy.util.RunnableWithIOException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -29,20 +30,21 @@ import java.util.List;
 import java.util.NavigableSet;
 
 /**
- * {@link RegionObserver} runWithPolicieser that wrap all calls to be sure there is "safe".
+ * {@link RegionObserver} adapter that wrap all calls to be sure there is "safe" according to the given policies
  * <br>
  * See {@link CoprocessorPolicyAdapter} for more details.
  */
 @Slf4j
-public class RegionObserverPolicyAdapter extends CoprocessorPolicyAdapter<RegionObserver> implements RegionObserver {
+public class RegionObserverPolicyAdapter<T extends RegionObserver> extends CoprocessorPolicyAdapter<T> implements RegionObserver {
 
 	/**
 	 * Constructor
 	 *
-	 * @param runWithPoliciesee region observer runWithPoliciesee
+	 * @param adaptee  egion observer adaptee
+	 * @param policies default policies to apply
 	 */
-	public RegionObserverPolicyAdapter(@NonNull RegionObserver runWithPoliciesee) {
-		super(runWithPoliciesee);
+	public RegionObserverPolicyAdapter(@NonNull T adaptee, @NonNull List<Policy> policies) {
+		super(adaptee, policies);
 	}
 
 	private void catchIOException(@NonNull RunnableWithIOException runnable) {

@@ -1,6 +1,6 @@
-package fr.poc.hbase.coprocessor.policy.handler;
+package fr.poc.hbase.coprocessor.policy.impl;
 
-import fr.poc.hbase.coprocessor.policy.PolicyHandler;
+import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
  * Simple logging policy
  */
 @Slf4j
-public class LoggingPolicy implements PolicyHandler {
+public class LoggingPolicy implements Policy {
 
 	@Override
 	public <T> T onArgument(T arg) {
-		LOGGER.trace("Securised argument [{}]", arg);
+		LOGGER.trace("Apply policies on argument [{}]", arg);
 		return arg;
 	}
 

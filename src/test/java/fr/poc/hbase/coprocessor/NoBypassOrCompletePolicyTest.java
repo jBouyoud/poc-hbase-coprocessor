@@ -3,19 +3,22 @@ package fr.poc.hbase.coprocessor;
 import fr.poc.hbase.HBaseHelper;
 import fr.poc.hbase.coprocessor.exemple.RegionObserverWithBypassExample;
 import fr.poc.hbase.coprocessor.exemple.RegionObserverWithCompleteExample;
-import fr.poc.hbase.coprocessor.policy.RegionObserverPolicyAdapter;
-import fr.poc.hbase.coprocessor.policy.handler.LimitRetryPolicy;
+import fr.poc.hbase.coprocessor.policy.adapter.RegionObserverPolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.impl.LimitRetryPolicy;
+import fr.poc.hbase.coprocessor.policy.impl.NoBypassOrCompletePolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.RetriesExhaustedException;
 import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 /**
- * Test {@link fr.poc.hbase.coprocessor.policy.handler.NoBypassOrCompletePolicy}
+ * Test {@link fr.poc.hbase.coprocessor.policy.impl.NoBypassOrCompletePolicy}
  */
 @Slf4j
 public class NoBypassOrCompletePolicyTest {
@@ -93,14 +96,20 @@ public class NoBypassOrCompletePolicyTest {
 	public static final class SafeBypass extends RegionObserverPolicyAdapter {
 
 		public SafeBypass() {
-			super(new RegionObserverWithBypassExample());
+			super(new RegionObserverWithBypassExample(), Arrays.asList(
+					new NoBypassOrCompletePolicy(),
+					new LimitRetryPolicy(2, new LimitRetryPolicy.InMemoryCache())
+			));
 		}
 	}
 
 	public static final class SafeComplete extends RegionObserverPolicyAdapter {
 
 		public SafeComplete() {
-			super(new RegionObserverWithCompleteExample());
+			super(new RegionObserverWithCompleteExample(), Arrays.asList(
+					new NoBypassOrCompletePolicy(),
+					new LimitRetryPolicy(2, new LimitRetryPolicy.InMemoryCache())
+			));
 		}
 	}
 

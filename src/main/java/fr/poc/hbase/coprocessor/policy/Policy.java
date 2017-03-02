@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 /**
  * Execution policy interface, able to implements various execution policy
  */
-public interface PolicyHandler extends Closeable {
+public interface Policy extends Closeable {
 
 	/**
 	 * Call on method arguments where policies should be applied
@@ -29,6 +29,7 @@ public interface PolicyHandler extends Closeable {
 	 * @param method proxied method
 	 * @param args   method arguments
 	 * @param <T>    proxied object type
+	 * @throws IOException if run current method run must be cancelled
 	 */
 	default <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) throws IOException {
 		// No operation

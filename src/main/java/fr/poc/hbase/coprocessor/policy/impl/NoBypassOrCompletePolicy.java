@@ -1,6 +1,6 @@
-package fr.poc.hbase.coprocessor.policy.handler;
+package fr.poc.hbase.coprocessor.policy.impl;
 
-import fr.poc.hbase.coprocessor.policy.PolicyHandler;
+import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.hadoop.hbase.CoprocessorEnvironment;
@@ -10,7 +10,7 @@ import org.apache.hadoop.hbase.coprocessor.ObserverContext;
  * A coprocessor must not call ObserverContext#bypass or ObserverContext#complete.<br>
  * That could be break the coprocessor chain (including security checks)
  */
-public class NoBypassOrCompletePolicy implements PolicyHandler {
+public class NoBypassOrCompletePolicy implements Policy {
 
 	@Override
 	@SuppressWarnings("unchecked")

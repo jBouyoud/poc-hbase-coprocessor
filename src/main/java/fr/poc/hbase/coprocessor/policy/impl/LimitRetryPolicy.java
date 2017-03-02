@@ -1,6 +1,6 @@
-package fr.poc.hbase.coprocessor.policy.handler;
+package fr.poc.hbase.coprocessor.policy.impl;
 
-import fr.poc.hbase.coprocessor.policy.PolicyHandler;
+import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.util.concurrent.*;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class LimitRetryPolicy implements PolicyHandler {
+public class LimitRetryPolicy implements Policy {
 
 	/**
 	 * Retry threshold, when retry
@@ -102,7 +102,7 @@ public class LimitRetryPolicy implements PolicyHandler {
 		/**
 		 * Default constructor
 		 *
-		 * @param message
+		 * @param message error description
 		 */
 		public ServerSideRetriesExhaustedException(String message) {
 			super(message);
