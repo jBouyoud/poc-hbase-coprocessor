@@ -43,12 +43,12 @@ defaultTasks 'clean', 'build', 'fatJar'
 
 dependencies {
 	// Hbase dependencies
-	[	"org.apache.hbase:hbase-client:${hbase_version}",
-		"org.apache.hbase:hbase-common:${hbase_version}",
-		"org.apache.hbase:hbase-protocol:${hbase_version}",
-		"org.apache.hbase:hbase-server:${hbase_version}",
-		"org.apache.hbase:hbase-annotations:${hbase_version}"].each {
-		compile(it){
+	["org.apache.hbase:hbase-client:${hbase_version}",
+	 "org.apache.hbase:hbase-common:${hbase_version}",
+	 "org.apache.hbase:hbase-protocol:${hbase_version}",
+	 "org.apache.hbase:hbase-server:${hbase_version}",
+	 "org.apache.hbase:hbase-annotations:${hbase_version}"].each {
+		compile(it) {
 			exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 			ext {
 				fatJarExclude = true
@@ -63,18 +63,36 @@ dependencies {
 		}
 	}
 
+	// Bytecode modifiction
+	compile "org.javassist:javassist:${javassist_version}"
+
 	// Testing libraries
 	testCompile 'org.assertj:assertj-core:3.6.2'
 	testCompile 'junit:junit'
 
 	// Hbase test libraries
-	testCompile("org.apache.hbase:hbase-testing-util:${hbase_version}"){
+	testCompile("org.apache.hbase:hbase-testing-util:${hbase_version}") {
 		exclude module: 'slf4j-log4j12'
 		exclude module: 'log4j'
 	}
 
+	// Java agent utilities (able to load agent on JVM at runtime)
+	testCompile 'com.ea.agentloader:ea-agent-loader:1.0.2'
+
 	// Logging purpose
 	testRuntime 'org.slf4j:slf4j-log4j12:1.7.23'
+}
+
+tasks.withType(Jar) {
+	manifest {
+		attributes(
+			'Premain-Class': 'fr.poc.hbase.coprocessor.policy.agent.CoprocessorPolicyAgent',
+			'Agent-Class': 'fr.poc.hbase.coprocessor.policy.agent.CoprocessorPolicyAgent',
+			'Can-Redefine-Classes': 'true',
+			'Can-Retransform-Classes': 'true',
+			'Can-Set-Native-Method-Prefix': 'false'
+		)
+	}
 }
 
 test {

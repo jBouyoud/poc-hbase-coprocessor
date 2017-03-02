@@ -19,7 +19,7 @@ import java.io.IOException;
 /**
  * Example master observer that creates a separate directory on the file system when a table is created.
  */
-public class MasterObserverExample extends BaseMasterObserver {
+public final class MasterObserverExample extends BaseMasterObserver {
 
 	public static final Log LOG = LogFactory.getLog(HRegion.class);
 

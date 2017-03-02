@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Example region observer checking for special get requests
  */
-public class RegionObserverExample extends BaseRegionObserver {
+public final class RegionObserverExample extends BaseRegionObserver {
 
 	public static final Log LOG = LogFactory.getLog(HRegion.class);
 	public static final byte[] FIXED_ROW = Bytes.toBytes("@@@GETTIME@@@");

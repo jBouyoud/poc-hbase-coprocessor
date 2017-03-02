@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * Example endpoint implementation, to group results by column
  */
-public class GroupByEndpoint extends GroupByProtos.GroupByService implements Coprocessor, CoprocessorService {
+public final class GroupByEndpoint extends GroupByProtos.GroupByService implements Coprocessor, CoprocessorService {
 
 	private RegionCoprocessorEnvironment env;
 

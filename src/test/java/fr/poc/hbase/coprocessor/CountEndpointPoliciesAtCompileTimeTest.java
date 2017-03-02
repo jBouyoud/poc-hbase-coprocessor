@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Global policy test
  */
 @Slf4j
-public class CountEndpointWithPoliciesTest {
+public class CountEndpointPoliciesAtCompileTimeTest {
 
 	private static final String TABLE_NAME_STRING = "testtable";
 	private static HBaseHelper helper;
@@ -68,7 +68,7 @@ public class CountEndpointWithPoliciesTest {
 		long start = System.currentTimeMillis();
 		assertThat(new RowCountEndpointClient(table).getRowCount()).as("Total row count")
 				.isEqualTo(CountTestUtil.ROW_COUNT);
-		LOGGER.info("CountEndpointWithPoliciesTest:testEndpoint executed in [{}]ms", System.currentTimeMillis() - start);
+		LOGGER.info("CountEndpointPoliciesAtCompileTimeTest:testEndpoint executed in [{}]ms", System.currentTimeMillis() - start);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class CountEndpointWithPoliciesTest {
 		assertThat(combinedCount.getFirst()).as("Total row count")
 				.isEqualTo(CountTestUtil.ROW_COUNT);
 		assertThat(combinedCount.getSecond()).as("Total cell count").isEqualTo(-3L);
-		LOGGER.info("CountEndpointWithPoliciesTest:testEndpointCombined executed in [{}]ms", System.currentTimeMillis() - start);
+		LOGGER.info("CountEndpointPoliciesAtCompileTimeTest:testEndpointCombined executed in [{}]ms", System.currentTimeMillis() - start);
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class CountEndpointWithPoliciesTest {
 		long start = System.currentTimeMillis();
 		assertThat(new RowCountEndpointClient(table).getRowCountWithBatch()).as("Total row count")
 				.isEqualTo(CountTestUtil.ROW_COUNT);
-		LOGGER.info("CountEndpointWithPoliciesTest:testEndpointBatch executed in [{}]ms", System.currentTimeMillis() - start);
+		LOGGER.info("CountEndpointPoliciesAtCompileTimeTest:testEndpointBatch executed in [{}]ms", System.currentTimeMillis() - start);
 	}
 
 	public static final class RowCountEndpointWithPolicies extends CoprocessorServicePolicyAdapter<RowCountEndpoint> {
@@ -111,4 +111,5 @@ public class CountEndpointWithPoliciesTest {
 			));
 		}
 	}
+
 }

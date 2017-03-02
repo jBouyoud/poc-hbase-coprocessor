@@ -47,13 +47,13 @@ This table resume for each issue the state of the given solution :
 
 |                       Problem                      | Manual Solution  | Automated Solution |
 |:--------------------------------------------------:|:----------------:|:------------------:|
-| can crash region servers.                          | DONE             | TO DO              |
-| break down the cluster in case of bad request      | DONE             | TO DO              |
-| hog a lot of memory/CPU                            | PARTIALLY DONE   | TO DO	             |
-| comes without metrics                              | DONE             | TO DO              |
+| can crash region servers.                          | DONE             | DONE               |
+| break down the cluster in case of bad request      | DONE             | DONE               |
+| hog a lot of memory/CPU                            | PARTIALLY DONE   | DONE 	             |
+| comes without metrics                              | DONE             | DONE               |
 | comes without process isolation                    | LIMITED          | UNSOLVED           |
-| can beak down the cluster in case of load failures | DONE             | UNSOLVED           |
-| can break coprocessors chains (bypass/complete)    | DONE             | TO DO  			 |
+| can beak down the cluster in case of load failures | LIMITED          | UNSOLVED           |
+| can break coprocessors chains (bypass/complete)    | DONE             | DONE   			 |
 
 
 Those solutions are not perfect but it's try to gives a pragmatic solution to those issues.
@@ -89,6 +89,8 @@ Those solutions are not perfect but it's try to gives a pragmatic solution to th
 
 ### TODOs
 
+- Add adapted for BulkLoadObserver, EndpointObserver
+- Check/improve adaptation of multi coprocessor type (Master / Region, etc.) at Compile time
 - Tests all coprocessors adapted methods
 - Improve tests
 - Instanciates policies from configuration
