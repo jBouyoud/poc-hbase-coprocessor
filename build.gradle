@@ -56,6 +56,9 @@ dependencies {
 		}
 	}
 
+	// Copy of hbase-protocol files to compile, extract *.proto and avoid compiling them twice
+	// testCompile files('lib/hbase-protocol-1.2.3-protobuf.jar') FIXME: Runtime issue due to packages
+
 	// Explicitly add Protobuf dependencies
 	compile("com.google.protobuf:protobuf-java:${protobuf_version}") {
 		ext {

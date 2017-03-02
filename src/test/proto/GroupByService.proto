@@ -4,6 +4,8 @@ option java_generic_services = true;
 option java_generate_equals_and_hash = true;
 option optimize_for = SPEED;
 
+import "Filter.proto";
+
 message Value {
 	required bytes key = 1;
 	required int64 count = 2 [default = 0];
@@ -15,6 +17,7 @@ message GroupByRequest {
 	required bytes family = 1;
 	required bytes column = 2;
 	required int32 matchLength = 3;
+	optional Filter filter = 4;
 }
 
 message GroupByResponse {

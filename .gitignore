@@ -65,6 +65,11 @@ local.properties
 *.db
 
 ######################
+# Lib files
+######################
+!lib/*.jar
+
+######################
 # Windows
 ######################
 # Windows image file caches

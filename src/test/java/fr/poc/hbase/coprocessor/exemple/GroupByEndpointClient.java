@@ -6,7 +6,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
+import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.HashMap;
@@ -35,12 +37,15 @@ public class GroupByEndpointClient {
 	 * @param rowkeyEnd   rowkey end (or null)
 	 * @return list of values
 	 */
-	public List<GroupByProtos.Value> groupBy(byte[] family, byte[] column, int length, byte[] rowkeyStart, byte[] rowkeyEnd) throws Throwable {
-		final GroupByProtos.GroupByRequest request = GroupByProtos.GroupByRequest.newBuilder()
+	public List<GroupByProtos.Value> groupBy(byte[] family, byte[] column, int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
+		GroupByProtos.GroupByRequest.Builder request = GroupByProtos.GroupByRequest.newBuilder()
 				.setFamily(ByteString.copyFrom(family))
 				.setColumn(ByteString.copyFrom(column))
-				.setMatchLength(length)
-				.build();
+				.setMatchLength(length);
+
+		if (filter != null) {
+			request.setFilter(ProtobufUtil.toFilter(filter));
+		}
 
 		Map<byte[], GroupByProtos.GroupByResponse> results = table.coprocessorService(
 				// Define the protocol interface being invoked.
@@ -49,7 +54,7 @@ public class GroupByEndpointClient {
 				groupBy -> {
 					BlockingRpcCallback<GroupByProtos.GroupByResponse> rpcCallback = new BlockingRpcCallback<>();
 					// The call() method is executing the endpoint functions.
-					groupBy.call(null, request, rpcCallback);
+					groupBy.call(null, request.build(), rpcCallback);
 					return rpcCallback.get();
 				}
 		);
