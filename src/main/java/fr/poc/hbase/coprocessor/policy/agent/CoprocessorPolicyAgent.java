@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Java agent entry point that allow to dynamicaly applies policies on user level coprocessors.
  * Policies are configured in Hbase configuration, see
- * {@see fr.poc.hbase.coprocessor.policy.config.PoliciesConfigurer} for more details
+ * {@link fr.poc.hbase.coprocessor.policy.config.PoliciesConfigurer} for more details
  */
 @Slf4j
 public class CoprocessorPolicyAgent {
