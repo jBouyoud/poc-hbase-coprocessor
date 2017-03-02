@@ -44,7 +44,7 @@ public class HBaseHelper implements Closeable {
 		configuration.set("hbase.replication", "false");
 		configuration.set("hbase.rpc.timeout", "60000");
 		configuration.set("hbase.client.retries.number", "15");
-		configuration.set("hbase.coprocessor.aborterror", "false");
+		//configuration.set("hbase.coprocessor.aborterror", "false");
 
 		configuration.reloadConfiguration();
 

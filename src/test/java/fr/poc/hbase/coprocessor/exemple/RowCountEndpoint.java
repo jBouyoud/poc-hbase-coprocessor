@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Example endpoint implementation, adding a row and cell count method.
  */
-public class RowCountEndpoint extends RowCounterProtos.RowCountService
+public final class RowCountEndpoint extends RowCounterProtos.RowCountService
 		implements Coprocessor, CoprocessorService {
 
 	private RegionCoprocessorEnvironment env;

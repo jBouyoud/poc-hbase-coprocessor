@@ -36,7 +36,7 @@ import java.util.NavigableSet;
  * Observer collecting invocation statistics.
  */
 @SuppressWarnings("deprecation")
-public class ObserverStatisticsEndpoint
+public final class ObserverStatisticsEndpoint
 		extends ObserverStatisticsProtos.ObserverStatisticsService
 		implements Coprocessor, CoprocessorService, RegionObserver {
 

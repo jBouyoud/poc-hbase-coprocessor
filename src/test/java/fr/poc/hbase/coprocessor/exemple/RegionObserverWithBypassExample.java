@@ -20,7 +20,7 @@ import java.util.List;
  * Example region observer checking for special get requests and bypassing further processing
  */
 @Slf4j
-public class RegionObserverWithBypassExample extends BaseRegionObserver {
+public final class RegionObserverWithBypassExample extends BaseRegionObserver {
 
 	public static final byte[] FIXED_ROW = Bytes.toBytes("@@@GETTIME@@@");
 

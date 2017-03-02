@@ -1,14 +1,13 @@
 package fr.poc.hbase.coprocessor;
 
 import fr.poc.hbase.HBaseHelper;
+import fr.poc.hbase.coprocessor.exemple.ObserverStatisticsEndpointClient;
 import fr.poc.hbase.coprocessor.exemple.ObserverStatisticsEndpoint;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import fr.poc.hbase.coprocessor.generated.ObserverStatisticsProtos;
 import org.apache.hadoop.hbase.filter.CompareFilter;
-import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,9 +16,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Use an endpoint to query observer statistics
@@ -33,6 +30,7 @@ public class ObserverStatisticsTest {
 	private static HBaseHelper helper;
 
 	private Table table;
+	private ObserverStatisticsEndpointClient stats;
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
@@ -56,7 +54,7 @@ public class ObserverStatisticsTest {
 					try {
 						htd.addCoprocessor(ObserverStatisticsEndpoint.class.getName(), null, Coprocessor.PRIORITY_USER, null);
 					} catch (IOException e) {
-						throw new IllegalStateException("Uncatched IO",e);
+						throw new IllegalStateException("Uncatched IO", e);
 					}
 				});
 		helper.put(TABLE_NAME_STRING,
@@ -65,6 +63,7 @@ public class ObserverStatisticsTest {
 				new long[]{1, 2}, new String[]{"val1", "val2"});
 
 		table = helper.getConnection().getTable(TABLE_NAME);
+		stats = new ObserverStatisticsEndpointClient(table);
 	}
 
 	/**
@@ -72,20 +71,20 @@ public class ObserverStatisticsTest {
 	 */
 	@Test
 	public void observerStatsTest() throws Throwable {
-		printStatistics(false, true);
+		stats.printStatistics(false, true);
 
 		LOGGER.info("Apply single put...");
 		Put put = new Put(Bytes.toBytes("row10"));
 		put.addColumn(Bytes.toBytes("colfam1"), Bytes.toBytes("qual10"),
 				Bytes.toBytes("val10"));
 		table.put(put);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Do single get...");
 		Get get = new Get(Bytes.toBytes("row10"));
 		get.addColumn(Bytes.toBytes("colfam1"), Bytes.toBytes("qual10"));
 		table.get(get);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 
 		LOGGER.info("Send batch with put and get...");
@@ -94,7 +93,7 @@ public class ObserverStatisticsTest {
 		batch.add(put);
 		batch.add(get);
 		table.batch(batch, results);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Scan single row...");
 		Scan scan = new Scan()
@@ -102,27 +101,27 @@ public class ObserverStatisticsTest {
 				.setStopRow(Bytes.toBytes("row11"));
 		ResultScanner scanner = table.getScanner(scan);
 		LOGGER.info("  -> after getScanner()...");
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 		scanner.next();
 		LOGGER.info("  -> after next()...");
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 		scanner.close();
 		LOGGER.info("  -> after close()...");
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Scan multiple rows...");
 		scan = new Scan();
 		scanner = table.getScanner(scan);
 		LOGGER.info("  -> after getScanner()...");
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 		scanner.next();
 		LOGGER.info("  -> after next()...");
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 		scanner.next();
-		printStatistics(false, true);
+		stats.printStatistics(false, true);
 		scanner.close();
 		LOGGER.info("  -> after close()...");
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply single put with mutateRow()...");
 		RowMutations mutations = new RowMutations(Bytes.toBytes("row1"));
@@ -131,14 +130,14 @@ public class ObserverStatisticsTest {
 				Bytes.toBytes("val10"));
 		mutations.add(put);
 		table.mutateRow(mutations);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply single column increment...");
 		Increment increment = new Increment(Bytes.toBytes("row10"));
 		increment.addColumn(Bytes.toBytes("colfam1"),
 				Bytes.toBytes("qual11"), 1);
 		table.increment(increment);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply multi column increment...");
 		increment = new Increment(Bytes.toBytes("row10"));
@@ -147,30 +146,30 @@ public class ObserverStatisticsTest {
 		increment.addColumn(Bytes.toBytes("colfam1"),
 				Bytes.toBytes("qual13"), 1);
 		table.increment(increment);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply single incrementColumnValue...");
 		table.incrementColumnValue(Bytes.toBytes("row10"),
 				Bytes.toBytes("colfam1"), Bytes.toBytes("qual12"), 1);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Call single exists()...");
 		table.exists(get);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply single delete...");
 		Delete delete = new Delete(Bytes.toBytes("row10"));
 		delete.addColumn(Bytes.toBytes("colfam1"),
 				Bytes.toBytes("qual10"));
 		table.delete(delete);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply single append...");
 		Append append = new Append(Bytes.toBytes("row10"));
 		append.add(Bytes.toBytes("colfam1"), Bytes.toBytes("qual15"),
 				Bytes.toBytes("-valnew"));
 		table.append(append);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply checkAndPut (failing)...");
 		put = new Put(Bytes.toBytes("row10"));
@@ -179,13 +178,13 @@ public class ObserverStatisticsTest {
 		boolean cap = table.checkAndPut(Bytes.toBytes("row10"),
 				Bytes.toBytes("colfam1"), Bytes.toBytes("qual15"), null, put);
 		LOGGER.info("  -> success: " + cap);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply checkAndPut (succeeding)...");
 		cap = table.checkAndPut(Bytes.toBytes("row10"),
 				Bytes.toBytes("colfam1"), Bytes.toBytes("qual16"), null, put);
 		LOGGER.info("  -> success: " + cap);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply checkAndDelete (failing)...");
 		delete = new Delete(Bytes.toBytes("row10"));
@@ -193,13 +192,13 @@ public class ObserverStatisticsTest {
 		cap = table.checkAndDelete(Bytes.toBytes("row10"),
 				Bytes.toBytes("colfam1"), Bytes.toBytes("qual15"), null, delete);
 		LOGGER.info("  -> success: " + cap);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply checkAndDelete (succeeding)...");
 		cap = table.checkAndDelete(Bytes.toBytes("row10"),
 				Bytes.toBytes("colfam1"), Bytes.toBytes("qual18"), null, delete);
 		LOGGER.info("  -> success: " + cap);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply checkAndMutate (failing)...");
 		mutations = new RowMutations(Bytes.toBytes("row10"));
@@ -214,43 +213,15 @@ public class ObserverStatisticsTest {
 				Bytes.toBytes("colfam1"), Bytes.toBytes("qual10"),
 				CompareFilter.CompareOp.GREATER, Bytes.toBytes("val10"), mutations);
 		LOGGER.info("  -> success: " + cap);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 
 		LOGGER.info("Apply checkAndMutate (succeeding)...");
 		cap = table.checkAndMutate(Bytes.toBytes("row10"),
 				Bytes.toBytes("colfam1"), Bytes.toBytes("qual10"),
 				CompareFilter.CompareOp.EQUAL, Bytes.toBytes("val10"), mutations);
 		LOGGER.info("  -> success: " + cap);
-		printStatistics(true, true);
+		stats.printStatistics(true, true);
 	}
 
 
-	private void printStatistics(boolean print, boolean clear) throws Throwable {
-		final ObserverStatisticsProtos.StatisticsRequest request = ObserverStatisticsProtos.StatisticsRequest
-				.newBuilder().setClear(clear).build();
-		Map<byte[], Map<String, Integer>> results = table.coprocessorService(
-				ObserverStatisticsProtos.ObserverStatisticsService.class,
-				null, null,
-				statistics -> {
-					BlockingRpcCallback<ObserverStatisticsProtos.StatisticsResponse> rpcCallback =
-							new BlockingRpcCallback<>();
-					statistics.getStatistics(null, request, rpcCallback);
-					ObserverStatisticsProtos.StatisticsResponse response = rpcCallback.get();
-					Map<String, Integer> stats = new LinkedHashMap<>();
-					for (ObserverStatisticsProtos.NameInt32Pair pair : response.getAttributeList()) {
-						stats.put(pair.getName(), pair.getValue());
-					}
-					return stats;
-				}
-		);
-		if (print) {
-			for (Map.Entry<byte[], Map<String, Integer>> entry : results.entrySet()) {
-				LOGGER.info("Region: {}", Bytes.toString(entry.getKey()));
-				for (Map.Entry<String, Integer> call : entry.getValue().entrySet()) {
-					LOGGER.info("  {}: {}", call.getKey(), call.getValue());
-				}
-			}
-			LOGGER.info("");
-		}
-	}
 }
