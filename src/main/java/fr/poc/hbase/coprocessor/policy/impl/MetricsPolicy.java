@@ -1,6 +1,6 @@
-package fr.poc.hbase.coprocessor.policy.handler;
+package fr.poc.hbase.coprocessor.policy.impl;
 
-import fr.poc.hbase.coprocessor.policy.PolicyHandler;
+import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import static org.apache.hadoop.metrics2.lib.Interns.info;
  * Hadoop Metrics2 instrumentation policy
  */
 @RequiredArgsConstructor
-public class MetricsPolicy implements PolicyHandler {
+public class MetricsPolicy implements Policy {
 
 	/**
 	 * Metric system where metrics will be registered

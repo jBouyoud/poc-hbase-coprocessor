@@ -3,23 +3,27 @@ package fr.poc.hbase.coprocessor;
 import fr.poc.hbase.HBaseHelper;
 import fr.poc.hbase.coprocessor.exemple.RowCountEndpoint;
 import fr.poc.hbase.coprocessor.exemple.RowCountEndpointClient;
-import fr.poc.hbase.coprocessor.policy.CoprocessorServicePolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.adapter.CoprocessorServicePolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.impl.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Pair;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Created by JBD on 23/02/2017.
+ * Global policy test
  */
 @Slf4j
 public class CountEndpointWithPoliciesTest {
@@ -98,7 +102,13 @@ public class CountEndpointWithPoliciesTest {
 
 	public static final class RowCountEndpointWithPolicies extends CoprocessorServicePolicyAdapter<RowCountEndpoint> {
 		public RowCountEndpointWithPolicies() {
-			super(new RowCountEndpoint());
+			super(new RowCountEndpoint(), Arrays.asList(
+					new TimeoutPolicy(2, TimeUnit.SECONDS),
+					new LoggingPolicy(),
+					new MetricsPolicy(DefaultMetricsSystem.instance(), "Coprocessors"),
+					new LimitRetryPolicy(2, new LimitRetryPolicy.RollingInMemoryCache(10, TimeUnit.MINUTES)),
+					new NoBypassOrCompletePolicy()
+			));
 		}
 	}
 }

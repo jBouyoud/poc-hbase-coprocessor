@@ -36,8 +36,10 @@ apply from: 'gradle/protobuf.gradle'
 apply plugin: 'eu.appsatori.fatjar'
 
 group = 'org.apache.hbase'
-version = '01.00.00-SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
 description = 'POC on Hbase coprocessors'
+
+defaultTasks 'clean', 'build', 'fatJar'
 
 dependencies {
 	// Hbase dependencies
@@ -48,14 +50,18 @@ dependencies {
 		"org.apache.hbase:hbase-annotations:${hbase_version}"].each {
 		compile(it){
 			exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+			ext {
+				fatJarExclude = true
+			}
 		}
 	}
 
 	// Explicitly add Protobuf dependencies
-	compile "com.google.protobuf:protobuf-java:${protobuf_version}"
-
-	// Memory measurement utilities
-	compile 'com.github.jbellis:jamm:0.3.1'
+	compile("com.google.protobuf:protobuf-java:${protobuf_version}") {
+		ext {
+			fatJarExclude = true
+		}
+	}
 
 	// Testing libraries
 	testCompile 'org.assertj:assertj-core:3.6.2'
@@ -101,3 +107,6 @@ task wrapper(type: Wrapper) {
 	gradleVersion = '3.3'
 }
 
+fatJar{
+	exclude 'META-INF/*.MF'
+}

@@ -30,7 +30,6 @@ sourceSets {
 // Cutomize compile task
 tasks.withType(JavaCompile) {
 	options.encoding = System.getProperty('file.encoding', 'UTF-8')
-
 }
 
 // Project Naming convention

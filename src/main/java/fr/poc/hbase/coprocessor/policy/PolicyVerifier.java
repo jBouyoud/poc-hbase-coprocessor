@@ -11,8 +11,8 @@ import org.apache.hadoop.hbase.DoNotRetryIOException;
 import org.apache.hadoop.hbase.HBaseIOException;
 import org.apache.hadoop.hdfs.util.Holder;
 
+import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
@@ -23,16 +23,16 @@ import java.util.concurrent.*;
  * <li>on adapted methods via
  * {@link #runWithPolicies(String, CallableWithIOException, Object...)} or
  * {@link #runWithPolicies(String, RunnableWithIOException, Object...)}</li>
- * <li>on paramters via {@link #argumentWithPolicies(Object)}</li>
+ * <li>on parameters via {@link #argumentWithPolicies(Object)}</li>
  * </ul>
- * <br/>
+ * <br>
  * This class is generic and can be applied on any kind of objects that wrap methods witch can throws {@link IOException}
  *
  * @param <A> Adaptee object type
  */
 @Slf4j
 @RequiredArgsConstructor
-public class PolicyVerifierAdapter<A> {
+public class PolicyVerifier<A> implements Closeable {
 
 	/**
 	 * Adaptee object
@@ -42,14 +42,15 @@ public class PolicyVerifierAdapter<A> {
 	private final A adaptee;
 
 	/**
+	 * policies to check
+	 */
+	@NonNull
+	private final List<Policy> policies;
+
+	/**
 	 * Executor that able to execute method in a separate thread
 	 */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-	/**
-	 * policies to check
-	 */
-	private List<PolicyHandler> policies = new ArrayList<>();
 
 	/**
 	 * Call a wrapped method with current policies
@@ -70,7 +71,7 @@ public class PolicyVerifierAdapter<A> {
 
 		try {
 			//Execute before handlers
-			for (PolicyHandler handler : policies) {
+			for (Policy handler : policies) {
 				handler.beforeRun(adaptee, method, args);
 			}
 
@@ -85,7 +86,7 @@ public class PolicyVerifierAdapter<A> {
 			resultHolder.held = future.get();
 		} catch (IOException ioe) {
 			throw ioe;
-		} catch (CancellationException cancel){
+		} catch (CancellationException cancel) {
 			throw new DoNotRetryIOException("coprocessor method has spend to much time to execute, see root cause for details", cancel);
 		} catch (ExecutionException executionEx) {
 			future.cancel(true);
@@ -127,7 +128,7 @@ public class PolicyVerifierAdapter<A> {
 	 */
 	protected final <T> T argumentWithPolicies(T arg) {
 		T argWithPolicies = arg;
-		for (PolicyHandler handler : policies) {
+		for (Policy handler : policies) {
 			argWithPolicies = handler.onArgument(argWithPolicies);
 		}
 		return argWithPolicies;
@@ -172,10 +173,8 @@ public class PolicyVerifierAdapter<A> {
 		});
 	}
 
-	/**
-	 * Close policies
-	 */
-	protected void closePolicies() throws IOException {
+	@Override
+	public void close() throws IOException {
 		Holder<Throwable> errorHolder = new Holder<>(null);
 		policies.forEach(policyHandler -> {
 			try {
@@ -193,25 +192,13 @@ public class PolicyVerifierAdapter<A> {
 		}
 	}
 
-
 	/**
 	 * Return the current policies
 	 *
 	 * @return the current policies
 	 */
-	public List<PolicyHandler> getPolicies() {
+	public List<Policy> getPolicies() {
 		return Collections.unmodifiableList(policies);
-	}
-
-	/**
-	 * Set new policies
-	 *
-	 * @param policies new policies
-	 * @return self
-	 */
-	public PolicyVerifierAdapter setPolicies(List<PolicyHandler> policies) {
-		this.policies = new ArrayList<>(policies);
-		return this;
 	}
 
 	/**
@@ -220,9 +207,10 @@ public class PolicyVerifierAdapter<A> {
 	 * @param policy the new policy
 	 * @return self
 	 */
-	public PolicyVerifierAdapter addPolicy(PolicyHandler policy) {
+	public PolicyVerifier<A> addPolicy(@NonNull Policy policy) {
 		this.policies.add(policy);
 		return this;
 	}
+
 
 }
