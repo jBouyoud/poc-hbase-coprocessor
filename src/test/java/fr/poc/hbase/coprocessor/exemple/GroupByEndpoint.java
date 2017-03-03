@@ -49,13 +49,27 @@ public final class GroupByEndpoint extends GroupByProtos.GroupByService implemen
 	}
 
 	@Override
-	public void call(RpcController controller,
-					 GroupByProtos.GroupByRequest request,
-					 RpcCallback<GroupByProtos.GroupByResponse> done) {
+	public void groupByRow(RpcController controller,
+						   GroupByProtos.GroupByRowRequest request,
+						   RpcCallback<GroupByProtos.GroupByResponse> done) {
 
 		GroupByProtos.GroupByResponse response = null;
 		try {
-			response = scanGroupByCount(request.getFamily().toByteArray(), request.getColumn().toByteArray(), request.getMatchLength(), request.hasFilter() ? request.getFilter() : null);
+			response = scanGroupByRow(request.getMatchLength(), request.hasFilter() ? request.getFilter() : null);
+		} catch (IOException e) {
+			ResponseConverter.setControllerException(controller, e);
+		}
+		done.run(response);
+	}
+
+	@Override
+	public void groupByColumn(RpcController controller,
+							  GroupByProtos.GroupByColumnRequest request,
+							  RpcCallback<GroupByProtos.GroupByResponse> done) {
+
+		GroupByProtos.GroupByResponse response = null;
+		try {
+			response = scanGroupByColumn(request.getFamily().toByteArray(), request.getColumn().toByteArray(), request.getMatchLength(), request.hasFilter() ? request.getFilter() : null);
 		} catch (IOException e) {
 			ResponseConverter.setControllerException(controller, e);
 		}
@@ -63,7 +77,72 @@ public final class GroupByEndpoint extends GroupByProtos.GroupByService implemen
 	}
 
 	/**
-	 * Group-by scan, aggregate by counting result
+	 * Group-by-row scan, aggregate by counting result
+	 *
+	 * @param length length of value prefix to match
+	 * @param filter filters to add to scan
+	 * @return GroupBy response
+	 */
+	private GroupByProtos.GroupByResponse scanGroupByRow(int length, FilterProtos.Filter filter) throws IOException {
+		long count = 0;
+
+		// Create scan
+		final Scan scan = new Scan();
+		if (filter != null) {
+			scan.setFilter(ProtobufUtil.toFilter(filter));
+		}
+
+		// Execute scan
+		try (
+				InternalScanner scanner = env.getRegion().getScanner(scan)
+		) {
+			Map<GroupKey, GroupByProtos.Value.Builder> groupByResults = new HashMap<>();
+			List<Cell> row = new ArrayList<>();
+			boolean hasMore;
+			do {
+				hasMore = scanner.next(row);
+
+				if (!row.isEmpty()) {
+					Cell cell = row.get(0);
+
+					// Extract the key from the beginning of the value
+					GroupKey key = new GroupKey(CellUtil.cloneRow(cell), length);
+
+					// Get aggregation (or create a new one)
+					// Rowkey start is set only once (the first one is always the minimum rowkey)
+					GroupByProtos.Value.Builder value = groupByResults.get(key);
+					if (value == null) {
+						value = GroupByProtos.Value.newBuilder()
+								.setRowkeyStart(ByteString.copyFrom(CellUtil.cloneRow(cell)))
+								.setKey(ByteString.copyFrom(key.getKey()));
+						groupByResults.put(key, value);
+					}
+
+					// Update aggregation
+					// Rowkey end is always overwritten (the last one is always the maximum rowkey)
+					value.setCount(value.getCount() + 1).setRowkeyEnd(ByteString.copyFrom(CellUtil.cloneRow(cell)));
+					count++;
+				}
+
+				row.clear();
+			} while (hasMore);
+
+			// Long delay to test interruption
+			if (count > 20_000) {
+				Thread.sleep(10_000);
+			}
+
+			// Build response
+			final Builder response = GroupByProtos.GroupByResponse.newBuilder();
+			groupByResults.forEach((key, value) -> response.addValues(value));
+			return response.build();
+		} catch (InterruptedException e) {
+			throw new IllegalStateException("Random timer interrupted", e);
+		}
+	}
+
+	/**
+	 * Group-by-column scan, aggregate by counting result
 	 *
 	 * @param family column family to group
 	 * @param column column to group
@@ -71,7 +150,7 @@ public final class GroupByEndpoint extends GroupByProtos.GroupByService implemen
 	 * @param filter filters to add to scan
 	 * @return GroupBy response
 	 */
-	private GroupByProtos.GroupByResponse scanGroupByCount(byte[] family, byte[] column, int length, FilterProtos.Filter filter) throws IOException {
+	private GroupByProtos.GroupByResponse scanGroupByColumn(byte[] family, byte[] column, int length, FilterProtos.Filter filter) throws IOException {
 		long count = 0;
 
 		// Create scan

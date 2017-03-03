@@ -13,7 +13,12 @@ message Value {
 	required bytes rowkeyEnd = 4;
 }
 
-message GroupByRequest {
+message GroupByRowRequest {
+	required int32 matchLength = 1;
+	optional Filter filter = 2;
+}
+
+message GroupByColumnRequest {
 	required bytes family = 1;
 	required bytes column = 2;
 	required int32 matchLength = 3;
@@ -25,5 +30,6 @@ message GroupByResponse {
 }
 
 service GroupByService {
-	rpc call (GroupByRequest) returns (GroupByResponse);
+	rpc groupByRow (GroupByRowRequest) returns (GroupByResponse);
+	rpc groupByColumn (GroupByColumnRequest) returns (GroupByResponse);
 }

@@ -28,17 +28,51 @@ public class GroupByEndpointClient {
 
 
 	/**
-	 * GroupBy
+	 * Group by row
+	 *
+	 * @param length      length of value prefix to match
+	 * @param rowkeyStart rowkey start (or null)
+	 * @param rowkeyEnd   rowkey end (or null)
+	 * @param filter      filter to apply to scan
+	 * @return list of values
+	 */
+	public List<GroupByProtos.Value> groupByRow(int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
+		GroupByProtos.GroupByRowRequest.Builder request = GroupByProtos.GroupByRowRequest.newBuilder()
+				.setMatchLength(length);
+
+		if (filter != null) {
+			request.setFilter(ProtobufUtil.toFilter(filter));
+		}
+
+		Map<byte[], GroupByProtos.GroupByResponse> results = table.coprocessorService(
+				// Define the protocol interface being invoked.
+				GroupByProtos.GroupByService.class,
+				rowkeyStart, rowkeyEnd,
+				groupBy -> {
+					BlockingRpcCallback<GroupByProtos.GroupByResponse> rpcCallback = new BlockingRpcCallback<>();
+					// The groupByColumn() method is executing the endpoint functions.
+					groupBy.groupByRow(null, request.build(), rpcCallback);
+					return rpcCallback.get();
+				}
+		);
+
+		//  Iterate over the returned map, containing the result for each region separately.
+		return aggregateResults(results);
+	}
+
+	/**
+	 * Group by column
 	 *
 	 * @param family      column family to group
 	 * @param column      column to group
 	 * @param length      length of value prefix to match
 	 * @param rowkeyStart rowkey start (or null)
 	 * @param rowkeyEnd   rowkey end (or null)
+	 * @param filter      filter to apply to scan
 	 * @return list of values
 	 */
-	public List<GroupByProtos.Value> groupBy(byte[] family, byte[] column, int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
-		GroupByProtos.GroupByRequest.Builder request = GroupByProtos.GroupByRequest.newBuilder()
+	public List<GroupByProtos.Value> groupByColumn(@NonNull byte[] family, @NonNull byte[] column, int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
+		GroupByProtos.GroupByColumnRequest.Builder request = GroupByProtos.GroupByColumnRequest.newBuilder()
 				.setFamily(ByteString.copyFrom(family))
 				.setColumn(ByteString.copyFrom(column))
 				.setMatchLength(length);
@@ -53,8 +87,8 @@ public class GroupByEndpointClient {
 				rowkeyStart, rowkeyEnd,
 				groupBy -> {
 					BlockingRpcCallback<GroupByProtos.GroupByResponse> rpcCallback = new BlockingRpcCallback<>();
-					// The call() method is executing the endpoint functions.
-					groupBy.call(null, request.build(), rpcCallback);
+					// The groupByColumn() method is executing the endpoint functions.
+					groupBy.groupByColumn(null, request.build(), rpcCallback);
 					return rpcCallback.get();
 				}
 		);
@@ -66,15 +100,41 @@ public class GroupByEndpointClient {
 	/**
 	 * GroupBy
 	 *
+	 * @param length      length of value prefix to match
+	 * @param rowkeyStart rowkey start (or null)
+	 * @param rowkeyEnd   rowkey end (or null)
+	 * @param filter      filter to apply to scan
+	 * @return list of values
+	 */
+	public List<GroupByProtos.Value> groupByRowWithBatch(int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
+		GroupByProtos.GroupByRowRequest.Builder request = GroupByProtos.GroupByRowRequest.newBuilder()
+				.setMatchLength(length);
+
+		if (filter != null) {
+			request.setFilter(ProtobufUtil.toFilter(filter));
+		}
+
+		Map<byte[], GroupByProtos.GroupByResponse> results = table.batchCoprocessorService(
+				GroupByProtos.GroupByService.getDescriptor().findMethodByName("groupByRow"),
+				request.build(), rowkeyStart, rowkeyEnd,
+				GroupByProtos.GroupByResponse.getDefaultInstance()
+		);
+		return aggregateResults(results);
+	}
+
+	/**
+	 * GroupBy
+	 *
 	 * @param family      column family to group
 	 * @param column      column to group
 	 * @param length      length of value prefix to match
 	 * @param rowkeyStart rowkey start (or null)
 	 * @param rowkeyEnd   rowkey end (or null)
+	 * @param filter      filter to apply to scan
 	 * @return list of values
 	 */
-	public List<GroupByProtos.Value> groupByWithBatch(byte[] family, byte[] column, int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
-		GroupByProtos.GroupByRequest.Builder request = GroupByProtos.GroupByRequest.newBuilder()
+	public List<GroupByProtos.Value> groupByColumnWithBatch(byte[] family, byte[] column, int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
+		GroupByProtos.GroupByColumnRequest.Builder request = GroupByProtos.GroupByColumnRequest.newBuilder()
 				.setFamily(ByteString.copyFrom(family))
 				.setColumn(ByteString.copyFrom(column))
 				.setMatchLength(length);
@@ -84,15 +144,19 @@ public class GroupByEndpointClient {
 		}
 
 		Map<byte[], GroupByProtos.GroupByResponse> results = table.batchCoprocessorService(
-				GroupByProtos.GroupByService.getDescriptor().findMethodByName("call"),
+				GroupByProtos.GroupByService.getDescriptor().findMethodByName("groupByColumn"),
 				request.build(), rowkeyStart, rowkeyEnd,
 				GroupByProtos.GroupByResponse.getDefaultInstance()
 		);
 		return aggregateResults(results);
-
-
 	}
 
+	/**
+	 * GroupBy aggregation of results
+	 *
+	 * @param results results to aggregate
+	 * @return list of values
+	 */
 	private List<GroupByProtos.Value> aggregateResults(Map<byte[], GroupByProtos.GroupByResponse> results) {
 		//  Iterate over the returned map, containing the result for each region separately.
 		final HashMap<ByteString, GroupByProtos.Value.Builder> aggregatedValues = new HashMap<>();

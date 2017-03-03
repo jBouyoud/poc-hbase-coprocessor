@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 public class GroupByEndpointTest {
 
-	private static final String TABLE_NAME = "pager_test";
+	private static final String TABLE_NAME = "groupby_table";
 
 	private static final int ROW_COUNT = 25_000;
 	private static final int COL_COUNT_PER_FAMILIES = 5;
@@ -85,9 +85,9 @@ public class GroupByEndpointTest {
 	 * @throws Throwable
 	 */
 	@Test
-	public void testEndpoint() throws Throwable {
+	public void testGroupByColumn() throws Throwable {
 		long start = System.currentTimeMillis();
-		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupBy(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, null);
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByColumn(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, null);
 		assertThat(values.size()).as("Groups count").isEqualTo(100);
 		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(100);
 		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isEqualTo(ROW_COUNT);
@@ -100,9 +100,9 @@ public class GroupByEndpointTest {
 	 * @throws Throwable
 	 */
 	@Test
-	public void testEndpointBatch() throws Throwable {
+	public void testGroupByColumnBatch() throws Throwable {
 		long start = System.currentTimeMillis();
-		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByWithBatch(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, null);
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByColumnWithBatch(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, null);
 		assertThat(values.size()).as("Groups count").isEqualTo(100);
 		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(100);
 		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isEqualTo(ROW_COUNT);
@@ -115,10 +115,10 @@ public class GroupByEndpointTest {
 	 * @throws Throwable
 	 */
 	@Test
-	public void testEndpointWithFilters() throws Throwable {
+	public void testGroupByColumnWithFilters() throws Throwable {
 		long start = System.currentTimeMillis();
 		Filter filter = new ValueFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator("^val-[02468]\\d*$"));
-		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupBy(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, filter);
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByColumn(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, filter);
 		assertThat(values.size()).as("Groups count").isEqualTo(50);
 		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(50);
 		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isLessThan(ROW_COUNT);
@@ -131,10 +131,10 @@ public class GroupByEndpointTest {
 	 * @throws Throwable
 	 */
 	@Test
-	public void testEndpointBatchWithFilters() throws Throwable {
+	public void testGroupByColumnBatchWithFilters() throws Throwable {
 		long start = System.currentTimeMillis();
 		Filter filter = new ValueFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator("^val-[02468]\\d*$"));
-		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByWithBatch(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, filter);
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByColumnWithBatch(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, filter);
 		assertThat(values.size()).as("Groups count").isEqualTo(50);
 		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(50);
 		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isLessThan(ROW_COUNT);
