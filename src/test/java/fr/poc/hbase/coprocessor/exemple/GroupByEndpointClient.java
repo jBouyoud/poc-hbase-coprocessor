@@ -60,6 +60,41 @@ public class GroupByEndpointClient {
 		);
 
 		//  Iterate over the returned map, containing the result for each region separately.
+		return aggregateResults(results);
+	}
+
+	/**
+	 * GroupBy
+	 *
+	 * @param family      column family to group
+	 * @param column      column to group
+	 * @param length      length of value prefix to match
+	 * @param rowkeyStart rowkey start (or null)
+	 * @param rowkeyEnd   rowkey end (or null)
+	 * @return list of values
+	 */
+	public List<GroupByProtos.Value> groupByWithBatch(byte[] family, byte[] column, int length, byte[] rowkeyStart, byte[] rowkeyEnd, Filter filter) throws Throwable {
+		GroupByProtos.GroupByRequest.Builder request = GroupByProtos.GroupByRequest.newBuilder()
+				.setFamily(ByteString.copyFrom(family))
+				.setColumn(ByteString.copyFrom(column))
+				.setMatchLength(length);
+
+		if (filter != null) {
+			request.setFilter(ProtobufUtil.toFilter(filter));
+		}
+
+		Map<byte[], GroupByProtos.GroupByResponse> results = table.batchCoprocessorService(
+				GroupByProtos.GroupByService.getDescriptor().findMethodByName("call"),
+				request.build(), rowkeyStart, rowkeyEnd,
+				GroupByProtos.GroupByResponse.getDefaultInstance()
+		);
+		return aggregateResults(results);
+
+
+	}
+
+	private List<GroupByProtos.Value> aggregateResults(Map<byte[], GroupByProtos.GroupByResponse> results) {
+		//  Iterate over the returned map, containing the result for each region separately.
 		final HashMap<ByteString, GroupByProtos.Value.Builder> aggregatedValues = new HashMap<>();
 		for (Map.Entry<byte[], GroupByProtos.GroupByResponse> entry : results.entrySet()) {
 			LOGGER.debug("Region: {}", Bytes.toString(entry.getKey()));

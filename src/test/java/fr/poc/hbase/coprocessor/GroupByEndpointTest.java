@@ -95,6 +95,21 @@ public class GroupByEndpointTest {
 	}
 
 	/**
+	 * Using the custom row-count endpoint in batch mode
+	 *
+	 * @throws Throwable
+	 */
+	@Test
+	public void testEndpointBatch() throws Throwable {
+		long start = System.currentTimeMillis();
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByWithBatch(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, null);
+		assertThat(values.size()).as("Groups count").isEqualTo(100);
+		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(100);
+		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isEqualTo(ROW_COUNT);
+		LOGGER.info("GroupByEndpointTest:testEndpoint executed in [{}]ms", System.currentTimeMillis() - start);
+	}
+
+	/**
 	 * Simple use of endpoint, with filters
 	 *
 	 * @throws Throwable
@@ -104,6 +119,22 @@ public class GroupByEndpointTest {
 		long start = System.currentTimeMillis();
 		Filter filter = new ValueFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator("^val-[02468]\\d*$"));
 		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupBy(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, filter);
+		assertThat(values.size()).as("Groups count").isEqualTo(50);
+		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(50);
+		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isLessThan(ROW_COUNT);
+		LOGGER.info("GroupByEndpointTest:testEndpoint executed in [{}]ms", System.currentTimeMillis() - start);
+	}
+
+	/**
+	 * Simple use of endpoint, with filters
+	 *
+	 * @throws Throwable
+	 */
+	@Test
+	public void testEndpointBatchWithFilters() throws Throwable {
+		long start = System.currentTimeMillis();
+		Filter filter = new ValueFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator("^val-[02468]\\d*$"));
+		List<GroupByProtos.Value> values = new GroupByEndpointClient(table).groupByWithBatch(Bytes.toBytes(FAMILIES[0]), Bytes.toBytes("col-1"), 6, null, null, filter);
 		assertThat(values.size()).as("Groups count").isEqualTo(50);
 		assertThat(values.stream().map(GroupByProtos.Value::getKey).distinct().count()).as("Distinct groups count").isEqualTo(50);
 		assertThat(values.stream().mapToLong(GroupByProtos.Value::getCount).sum()).as("Total records").isLessThan(ROW_COUNT);
