@@ -94,9 +94,9 @@ Those solutions are not perfect but it's try to gives a pragmatic solution to th
 - Tests all coprocessors adapted methods
 - Improve tests assertions
 - Instanciates policies from configuration
-- Use coprocessor environment to fetch configuration
 - Implements an Hbase cluster wide fails cache (maybe based on an Hbase table?) 
 - Run AgentTests in gradle (actually don't run them because they breaks down without policies test)
+- Dynamic policies (through zookeeper?)
 
 ## Setup
 
@@ -110,3 +110,40 @@ $ PATH=$PATH;`workspace`/developer/bin
 ```shell 
 $ gradlew test
 ```
+
+### Run 'real' test on Hortonwork Sandbox
+
+1. Run : 
+	```shell 
+	$ gradlew
+	```
+1. Copy `build/libs/poc-hbase-coprocessor-1.0.0-SNAPSHOT.jar` into the sandbox
+
+1. Copy the jar file into `/usr/hdp/current/hbase-master/lib/` 
+	and `/usr/hdp/current/hbase-regionserver/lib/`.
+	
+	```sh	
+	$ cp poc-hbase-coprocessor-1.0.0-SNAPSHOT.jar /usr/hdp/current/hbase-master/lib/
+	$ cp poc-hbase-coprocessor-1.0.0-SNAPSHOT.jar /usr/hdp/current/hbase-regionserver/lib/
+	```
+	
+1. Go to `Ambari > Hbase> Configs > Advanced > Advanced hbase-env > hbase-env template`
+	A the tail of config, add 
+	```sh
+	# Add Coprocessor policies agent
+	export HBASE_REGIONSERVER_OPTS=" -javaagent:/usr/hdp/current/hbase-master/lib/poc-hbase-coprocessor-1.0.0-SNAPSHOT.jar $HBASE_REGIONSERVER_OPTS"
+	export HBASE_MASTER_OPTS=" -javaagent:/usr/hdp/current/hbase-regionserver/lib/poc-hbase-coprocessor-1.0.0-SNAPSHOT.jar $HBASE_MASTER_OPTS "
+	```
+1. Add extra configuration (Custom hbase-site > Add property)
+
+	Key   : hbase.coprocessors.policy.white-list
+	Value : org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint,org.apache.hadoop.hbase.coprocessor.MultiRowMutationEndpoint,org.apache.ranger.authorization.hbase.RangerAuthorizationCoprocessor,org.apache.hadoop.hbase.backup.master.BackupController
+	
+1. Restart Hbase
+1. In hbase shell
+
+	```sh
+	$ disable 'table'
+	$ alter 'table, 'coprocessor' => '|org.apache.hadoop.hbase.coprocessor.AggregateImplementation||'
+	$ enalbe 'table'
+	```
