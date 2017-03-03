@@ -6,6 +6,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.apache.hadoop.hbase.CoprocessorEnvironment;
+import org.apache.hadoop.hbase.coprocessor.ObserverContext;
+import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
@@ -43,26 +46,32 @@ public class MetricsPolicy implements Policy {
 
 	@Override
 	public <T> void beforeRun(@NonNull T object, @NonNull String method, @NonNull Object[] args) throws IOException {
-		String metricName = getMetricName(object, method);
+		String metricName = getMetricName(object, method, args.length >= 1 ? args[0] : null);
 
 		if (!metrics.containsKey(metricName)) {
-			metrics.put(metricName, metricsSystem.register(metricName, "", new MetricInfo(metricName)));
+			MetricsSource source = metricsSystem.getSource(metricName);
+			if (source != null && source instanceof MetricInfo) {
+				metrics.put(metricName, (MetricInfo) source);
+			} else {
+				metrics.put(metricName, new MetricInfo(metricName));
+				metricsSystem.register(metricName, "", metrics.get(metricName));
+			}
 		}
 	}
 
 	@Override
 	public <T> void onError(@NonNull T object, @NonNull String method, @NonNull Object[] args, @NonNull IOException ioException) {
-		metrics.get(getMetricName(object, method)).addError();
+		metrics.get(getMetricName(object, method, args.length >= 1 ? args[0] : null)).addError();
 	}
 
 	@Override
 	public <T> void onUnexpectedError(@NonNull T object, @NonNull String method, @NonNull Object[] args, @NonNull Throwable throwable) {
-		metrics.get(getMetricName(object, method)).addUnexpectedError();
+		metrics.get(getMetricName(object, method, args.length >= 1 ? args[0] : null)).addUnexpectedError();
 	}
 
 	@Override
 	public <T> void afterRun(@NonNull T object, @NonNull String method, @NonNull Object[] args, Object result, long executionTime) {
-		metrics.get(getMetricName(object, method)).getExecutionStats().addValue(TimeUnit.NANOSECONDS.toMillis(executionTime));
+		metrics.get(getMetricName(object, method, args.length >= 1 ? args[0] : null)).getExecutionStats().addValue(TimeUnit.NANOSECONDS.toMillis(executionTime));
 	}
 
 	/**
@@ -73,8 +82,24 @@ public class MetricsPolicy implements Policy {
 	 * @param <T>    type of object
 	 * @return the metric name
 	 */
-	private <T> String getMetricName(@NonNull T object, @NonNull String method) {
-		return method.replaceAll("[:()]", "-") + ",sub=" + metricsContext + ",coprocessor=" + object.getClass().getSimpleName();
+	private <T> String getMetricName(@NonNull T object, @NonNull String method, Object arg) {
+		String on = null;
+		if (arg != null) {
+			CoprocessorEnvironment env = null;
+			if (arg instanceof CoprocessorEnvironment) {
+				env = (CoprocessorEnvironment) arg;
+			} else if (arg instanceof ObserverContext) {
+				env = ((ObserverContext) arg).getEnvironment();
+			}
+			if (env != null && env instanceof RegionCoprocessorEnvironment) {
+				on = ((RegionCoprocessorEnvironment) env).getRegionInfo().getRegionNameAsString();
+			}
+		}
+		String name = method.replaceAll("[:()]", "-") + ",sub=" + metricsContext + ",coprocessor=" + object.getClass().getSimpleName();
+		if (on != null) {
+			name += ",on=" + on;
+		}
+		return name;
 	}
 
 	/**
@@ -92,6 +117,7 @@ public class MetricsPolicy implements Policy {
 		/**
 		 * Execution statistics
 		 */
+		@NonNull
 		private final SummaryStatistics executionStats = new SummaryStatistics();
 
 		/**
