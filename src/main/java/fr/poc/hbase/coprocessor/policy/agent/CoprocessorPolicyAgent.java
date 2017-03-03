@@ -35,7 +35,7 @@ public class CoprocessorPolicyAgent {
 	 * @param args            agent raw arguments
 	 * @param instrumentation JVM instrumentation
 	 */
-	public static void premain(@NonNull String args, @NonNull Instrumentation instrumentation) {
+	public static void premain(String args, @NonNull Instrumentation instrumentation) {
 		Map<String, String> properties = getPropertiesFromArgs(args);
 
 		LOGGER.info("Loading CoprocessorHost class transformer");
@@ -65,7 +65,7 @@ public class CoprocessorPolicyAgent {
 	 * @param args raw arguments
 	 * @return parsed properties
 	 */
-	private static Map<String, String> getPropertiesFromArgs(@NonNull String args) {
+	private static Map<String, String> getPropertiesFromArgs(String args) {
 		Map<String, String> properties = new HashMap<>();
 		if (args != null) {
 			// parse the arguments:
