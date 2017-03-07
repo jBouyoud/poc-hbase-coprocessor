@@ -1,22 +1,20 @@
-package fr.poc.hbase.coprocessor.policy.adapter;
+package fr.poc.hbase.coprocessor.policy.proxy;
 
 import com.google.protobuf.*;
 import fr.poc.hbase.coprocessor.policy.Policy;
 import fr.poc.hbase.coprocessor.policy.PolicyVerifier;
 import lombok.NonNull;
-import org.apache.hadoop.hbase.coprocessor.RegionServerObserver;
-import org.apache.hadoop.hbase.coprocessor.SingletonCoprocessorService;
 import org.apache.hadoop.hbase.protobuf.ResponseConverter;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Protobuf {@link Service} adapter that wrap all calls to be sure there is "safe" according to the given policies
+ * Protobuf {@link Service} proxy that wrap all calls to be sure there is "safe" according to the given policies
  * <br>
  * See {@link PolicyVerifier} for more details.
  */
-public class ServicePolicyAdapter extends PolicyVerifier<Service> implements Service {
+public class ServicePolicyProxy extends PolicyVerifier<Service> implements Service {
 
 	/**
 	 * Constructor
@@ -24,7 +22,7 @@ public class ServicePolicyAdapter extends PolicyVerifier<Service> implements Ser
 	 * @param adaptee  service adaptee
 	 * @param policies policies to check
 	 */
-	public ServicePolicyAdapter(@NonNull Service adaptee, @NonNull List<Policy> policies) {
+	public ServicePolicyProxy(@NonNull Service adaptee, @NonNull List<Policy> policies) {
 		super(adaptee, policies);
 	}
 

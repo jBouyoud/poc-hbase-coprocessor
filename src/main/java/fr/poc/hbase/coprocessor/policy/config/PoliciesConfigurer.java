@@ -1,7 +1,7 @@
 package fr.poc.hbase.coprocessor.policy.config;
 
 import fr.poc.hbase.coprocessor.policy.Policy;
-import fr.poc.hbase.coprocessor.policy.adapter.CoprocessorPolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.proxy.CoprocessorPolicyProxy;
 import fr.poc.hbase.coprocessor.policy.impl.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class PoliciesConfigurer {
 	 */
 	public boolean needApplyPolicies(int priority, @NonNull Coprocessor coprocessor) {
 		// Do not apply policies when they are already sets
-		if (coprocessor instanceof CoprocessorPolicyAdapter) {
+		if (coprocessor instanceof CoprocessorPolicyProxy) {
 			return false;
 		}
 		// Do not apply policies on withe list classes

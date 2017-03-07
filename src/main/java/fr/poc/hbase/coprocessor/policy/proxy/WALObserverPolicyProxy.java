@@ -1,4 +1,4 @@
-package fr.poc.hbase.coprocessor.policy.adapter;
+package fr.poc.hbase.coprocessor.policy.proxy;
 
 import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
@@ -14,11 +14,11 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * {@link WALObserver} adapter that wrap all calls to be sure there is "safe" according to the given policies
+ * {@link WALObserver} proxy that wrap all calls to be sure there is "safe" according to the given policies
  * <br>
- * See {@link CoprocessorPolicyAdapter} for more details.
+ * See {@link CoprocessorPolicyProxy} for more details.
  */
-public class WALObserverPolicyAdapter extends CoprocessorPolicyAdapter<WALObserver> implements WALObserver {
+public class WALObserverPolicyProxy extends CoprocessorPolicyProxy<WALObserver> implements WALObserver {
 
 	/**
 	 * Constructor
@@ -26,7 +26,7 @@ public class WALObserverPolicyAdapter extends CoprocessorPolicyAdapter<WALObserv
 	 * @param adaptee  coprocessor adaptee
 	 * @param policies default policies to apply
 	 */
-	public WALObserverPolicyAdapter(@NonNull WALObserver adaptee, @NonNull List<Policy> policies) {
+	public WALObserverPolicyProxy(@NonNull WALObserver adaptee, @NonNull List<Policy> policies) {
 		super(adaptee, policies);
 	}
 

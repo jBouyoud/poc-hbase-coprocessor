@@ -3,7 +3,7 @@ package fr.poc.hbase.coprocessor;
 import fr.poc.hbase.HBaseHelper;
 import fr.poc.hbase.coprocessor.exemple.RowCountEndpoint;
 import fr.poc.hbase.coprocessor.exemple.RowCountEndpointClient;
-import fr.poc.hbase.coprocessor.policy.adapter.CoprocessorServicePolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.proxy.CoprocessorServicePolicyProxy;
 import fr.poc.hbase.coprocessor.policy.impl.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.Coprocessor;
@@ -100,7 +100,7 @@ public class CountEndpointPoliciesAtCompileTimeTest {
 		LOGGER.info("CountEndpointPoliciesAtCompileTimeTest:testEndpointBatch executed in [{}]ms", System.currentTimeMillis() - start);
 	}
 
-	public static final class RowCountEndpointWithPolicies extends CoprocessorServicePolicyAdapter<RowCountEndpoint> {
+	public static final class RowCountEndpointWithPolicies extends CoprocessorServicePolicyProxy<RowCountEndpoint> {
 		public RowCountEndpointWithPolicies() {
 			super(new RowCountEndpoint(), Arrays.asList(
 					new TimeoutPolicy(2, TimeUnit.SECONDS),

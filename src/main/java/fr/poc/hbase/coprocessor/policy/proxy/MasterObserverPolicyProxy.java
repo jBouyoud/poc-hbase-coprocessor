@@ -1,4 +1,4 @@
-package fr.poc.hbase.coprocessor.policy.adapter;
+package fr.poc.hbase.coprocessor.policy.proxy;
 
 import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
@@ -17,11 +17,11 @@ import java.util.List;
 
 
 /**
- * {@link MasterObserver} adapter that wrap all calls to be sure there is "safe" according to the given policies.
+ * {@link MasterObserver} proxy that wrap all calls to be sure there is "safe" according to the given policies.
  * <br>
- * See {@link CoprocessorPolicyAdapter} for more details.
+ * See {@link CoprocessorPolicyProxy} for more details.
  */
-public class MasterObserverPolicyAdapter<T extends MasterObserver> extends CoprocessorPolicyAdapter<T> implements MasterObserver {
+public class MasterObserverPolicyProxy<T extends MasterObserver> extends CoprocessorPolicyProxy<T> implements MasterObserver {
 
 	/**
 	 * Constructor
@@ -29,7 +29,7 @@ public class MasterObserverPolicyAdapter<T extends MasterObserver> extends Copro
 	 * @param adaptee  master observer adaptee
 	 * @param policies default policies to apply
 	 */
-	public MasterObserverPolicyAdapter(@NonNull T adaptee, @NonNull List<Policy> policies) {
+	public MasterObserverPolicyProxy(@NonNull T adaptee, @NonNull List<Policy> policies) {
 		super(adaptee, policies);
 	}
 

@@ -1,6 +1,6 @@
 # poc-hbase-coprocessor
 
-This POC aims to demonstrate how to solve those coprocessors "issues".
+This POC aims to demonstrate how to secure hbase coprocessors by applying custom policies on it.
 
 It based on Hbase version : *1.2.3*.
 
@@ -33,88 +33,105 @@ Identified coprocessors issues are :
       
 1. comes without process isolation   
    Coprocessors are executed in the RegionServer JVM.
-   
-1. can beak down the cluster in case of load failures  
 
 1. can break security configuration by bypass other coprocessors
+
+1. can beak down the cluster in case of load failures  
     
 ## How to solve coprocessors "issues"
  
 One of the common solution is to __write defensive code__.
-But it's an heavy process (review, test, etc.).
+But it's an heavy process (review, tests, etc.).
 
 This table resume for each issue the state of the given solution :
 
-|                       Problem                      | Manual Solution  | Automated Solution |
-|:--------------------------------------------------:|:----------------:|:------------------:|
-| can crash region servers.                          | DONE             | DONE               |
-| break down the cluster in case of bad request      | DONE             | DONE               |
-| hog a lot of memory/CPU                            | PARTIALLY DONE   | DONE               |
-| comes without metrics                              | DONE             | DONE               |
-| comes without process isolation                    | LIMITED          | UNSOLVED           |
-| can beak down the cluster in case of load failures | LIMITED          | UNSOLVED           |
-| can break coprocessors chains (bypass/complete)    | DONE             | DONE               |
+|                       Problem                      | Solution         |
+|:--------------------------------------------------:|:----------------:|
+| can crash region servers.                          | DONE             |
+| break down the cluster in case of bad request      | DONE             |
+| hog a lot of memory/CPU                            | PARTIALLY DONE   |
+| comes without metrics                              | DONE             |
+| comes without process isolation                    | LIMITED          |
+| can break coprocessors chains (bypass/complete)    | DONE             |
+| can beak down the cluster in case of load failures | LIMITED          |
 
+Those solutions are certainly not perfect but it's try to gives a pragmatic solution to those issues.
 
-Those solutions are not perfect but it's try to gives a pragmatic solution to those issues.
+### How to apply custom policies
+
+#### At compile time
+
+Use your favorite design pattern : `proxy` to to besure that all methods call are wrapped through a policy verifier.
+
+Pro : Easy, low overload
+Cons: Intrusive, not possible on existing coprocessors, ne the library
+
+### At runtime 
+
+Use Java agent to enhance all hbase coprocessors host. 
+For each instanciated coprocessors create a dynamic proxy witch applies policies. 
+
+Pro : hard to implement, more important load time overhead
+Cons: Hbase bytecode modification
+ 
+### Implemented policies 
 
 1. __can crash region servers__    
-	Create an coprocessor adapter that catch Throwable and rethrow it as IOException.
-	And then wraps this adapter into an Java Agent class transformer to automate it.
+	Create a policy that catch Throwable and rethrow it as IOException (or derived ones).
 	   
 1. __can break down the cluster in case of bad request__  
-	Create a coprocessor adapter that implements a retry limit (region server side) base on input queries3
-	And then wraps this adapter into an Java Agent class transformer to automate it.
+	Create a policy that implements a retry limit (region server side) base on input queries.
    
 1. __hog a lot of memory/CPU__   
-	Used a runtime profiler for CPU/Memory.
-	Create a coprocessor adapter that implements a request timeout logic and monitor Memory.
-	And then wraps this adapter into an Java Agent class transformer to automate it.
-   
-1. __comes without metrics__  
-	Create a coprocessor adapter that implements a metrics logic and write some generics information in log
-	And then wraps this adapter into an Java Agent class transformer to automate it.
+	Create a policy that implemts a timeout logic.
+	Create a policy that profile memory of execution at runtime.
+	   
+1. __comes without metrics__ 
+ 	Create a logger policy
+ 	Create a metrics policy based on hadoop metrics2.
       
 1. __comes without process isolation__  
 	Create a separate process that communicate with pipe.
 	This solution is not really good because it breaks coprocessors deployment model.
+
+1. __can break security configuration by bypass other coprocessors__  
+	Create a policy that wrap ObserverContext and throw Exception when bypass and/or complete method are called.
 	   
 1. __can beak down the cluster in case of load failures__  
 	Use hbase.coprocessor.aborterror = false
 	This avoid to break the entire RegionServer only Table with incriminated coprocessors are unloaded.
 
-1. __can break security configuration by bypass other coprocessors__  
-	Create a coprocessor adapter wrap ObserverContext and throw Exception when bypass and/or complete method are called.
-	And then wraps this adapter into an Java Agent class transformer to automate it.
-
 ### TODOs
 
-- Add adapted for BulkLoadObserver, EndpointObserver
+- Add proxy for BulkLoadObserver, EndpointObserver
 - Check/improve adaptation of multi coprocessor type (Master / Region, etc.) at Compile time
 - Tests all coprocessors adapted methods
 - Improve tests assertions
 - Instanciates policies from configuration
 - Implements an Hbase cluster wide fails cache (maybe based on an Hbase table?) 
 - Run AgentTests in gradle (actually don't run them because they breaks down without policies test)
-- Dynamic policies (through zookeeper?)
+- Dynamic policies configuration (through zookeeper?)
+- Configuration for a set of coprocessors
+- Advanced benchmark
+- Improve runtime bytecode weaving to intercept corpocessor class lading errors
 
 ## Setup
 
 If you want to run integration tests outside gradle environment, 
 you need to update `PATH` environment variable to add `workspace/developer/bin`.
-```shell 
+```sh
 $ PATH=$PATH;`workspace`/developer/bin
 ```
     
 ### Run tests
-```shell 
+```sh
 $ gradlew test
 ```
 
 ### Run 'real' test on Hortonwork Sandbox
 
 1. Run : 
-	```shell 
+	```sh
 	$ gradlew
 	```
 1. Copy `build/libs/poc-hbase-coprocessor-1.0.0-SNAPSHOT.jar` into the sandbox
@@ -145,5 +162,5 @@ $ gradlew test
 	```sh
 	$ disable 'table'
 	$ alter 'table, 'coprocessor' => '|org.apache.hadoop.hbase.coprocessor.AggregateImplementation||'
-	$ enalbe 'table'
+	$ enable 'table'
 	```

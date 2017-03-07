@@ -1,7 +1,7 @@
 package fr.poc.hbase.coprocessor.policy;
 
 import com.google.protobuf.Service;
-import fr.poc.hbase.coprocessor.policy.adapter.ServicePolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.proxy.ServicePolicyProxy;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.Coprocessor;
@@ -65,8 +65,8 @@ public class PolicyInvocationHandler<T extends Coprocessor> extends PolicyVerifi
 				|| method.getDeclaringClass().isAssignableFrom(SingletonCoprocessorService.class))
 				&& method.getReturnType().isAssignableFrom(Service.class)) {
 			Service service = (Service) method.invoke(getAdaptee(), args);
-			LOGGER.info("Create a ServicePolicyAdapter on CoprocessorService [{}]", service);
-			return new ServicePolicyAdapter(service, getPolicies());
+			LOGGER.info("Create a ServicePolicyProxy on CoprocessorService [{}]", service);
+			return new ServicePolicyProxy(service, getPolicies());
 		}
 
 		try {

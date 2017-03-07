@@ -1,4 +1,4 @@
-package fr.poc.hbase.coprocessor.policy.adapter;
+package fr.poc.hbase.coprocessor.policy.proxy;
 
 import com.google.common.collect.ImmutableList;
 import fr.poc.hbase.coprocessor.policy.Policy;
@@ -30,12 +30,12 @@ import java.util.List;
 import java.util.NavigableSet;
 
 /**
- * {@link RegionObserver} adapter that wrap all calls to be sure there is "safe" according to the given policies
+ * {@link RegionObserver} proxy that wrap all calls to be sure there is "safe" according to the given policies
  * <br>
- * See {@link CoprocessorPolicyAdapter} for more details.
+ * See {@link CoprocessorPolicyProxy} for more details.
  */
 @Slf4j
-public class RegionObserverPolicyAdapter<T extends RegionObserver> extends CoprocessorPolicyAdapter<T> implements RegionObserver {
+public class RegionObserverPolicyProxy<T extends RegionObserver> extends CoprocessorPolicyProxy<T> implements RegionObserver {
 
 	/**
 	 * Constructor
@@ -43,7 +43,7 @@ public class RegionObserverPolicyAdapter<T extends RegionObserver> extends Copro
 	 * @param adaptee  egion observer adaptee
 	 * @param policies default policies to apply
 	 */
-	public RegionObserverPolicyAdapter(@NonNull T adaptee, @NonNull List<Policy> policies) {
+	public RegionObserverPolicyProxy(@NonNull T adaptee, @NonNull List<Policy> policies) {
 		super(adaptee, policies);
 	}
 

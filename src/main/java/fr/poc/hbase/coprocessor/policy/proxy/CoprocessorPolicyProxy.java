@@ -1,4 +1,4 @@
-package fr.poc.hbase.coprocessor.policy.adapter;
+package fr.poc.hbase.coprocessor.policy.proxy;
 
 import fr.poc.hbase.coprocessor.policy.Policy;
 import fr.poc.hbase.coprocessor.policy.PolicyVerifier;
@@ -11,14 +11,14 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * {@link Coprocessor} adapter that wrap all calls to be sure there is "safe" according to the given policies
+ * {@link Coprocessor} proxy that wrap all calls to be sure there is "safe" according to the given policies
  * <p>
  * This adapter able to catch all {@link Throwable} that can be thrown be a coprocessor
  * and wrap it into an authorized {@link IOException}
  * </p>
  */
 @Slf4j
-public class CoprocessorPolicyAdapter<T extends Coprocessor> extends PolicyVerifier<T> implements Coprocessor {
+public class CoprocessorPolicyProxy<T extends Coprocessor> extends PolicyVerifier<T> implements Coprocessor {
 
 	/**
 	 * Constructor
@@ -26,7 +26,7 @@ public class CoprocessorPolicyAdapter<T extends Coprocessor> extends PolicyVerif
 	 * @param adaptee  coprocessor adaptee
 	 * @param policies default policies to apply
 	 */
-	public CoprocessorPolicyAdapter(@NonNull T adaptee, @NonNull List<Policy> policies) {
+	public CoprocessorPolicyProxy(@NonNull T adaptee, @NonNull List<Policy> policies) {
 		super(adaptee, policies);
 	}
 

@@ -3,7 +3,7 @@ package fr.poc.hbase.coprocessor;
 import fr.poc.hbase.HBaseHelper;
 import fr.poc.hbase.coprocessor.exemple.RegionObserverWithBypassExample;
 import fr.poc.hbase.coprocessor.exemple.RegionObserverWithCompleteExample;
-import fr.poc.hbase.coprocessor.policy.adapter.RegionObserverPolicyAdapter;
+import fr.poc.hbase.coprocessor.policy.proxy.RegionObserverPolicyProxy;
 import fr.poc.hbase.coprocessor.policy.impl.LimitRetryPolicy;
 import fr.poc.hbase.coprocessor.policy.impl.NoBypassOrCompletePolicy;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,6 @@ import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Test {@link fr.poc.hbase.coprocessor.policy.impl.NoBypassOrCompletePolicy}
@@ -93,7 +92,7 @@ public class NoBypassOrCompletePolicyTest {
 		}
 	}
 
-	public static final class SafeBypass extends RegionObserverPolicyAdapter {
+	public static final class SafeBypass extends RegionObserverPolicyProxy {
 
 		public SafeBypass() {
 			super(new RegionObserverWithBypassExample(), Arrays.asList(
@@ -103,7 +102,7 @@ public class NoBypassOrCompletePolicyTest {
 		}
 	}
 
-	public static final class SafeComplete extends RegionObserverPolicyAdapter {
+	public static final class SafeComplete extends RegionObserverPolicyProxy {
 
 		public SafeComplete() {
 			super(new RegionObserverWithCompleteExample(), Arrays.asList(

@@ -1,4 +1,4 @@
-package fr.poc.hbase.coprocessor.policy.adapter;
+package fr.poc.hbase.coprocessor.policy.proxy;
 
 import fr.poc.hbase.coprocessor.policy.Policy;
 import lombok.NonNull;
@@ -17,12 +17,12 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * {@link RegionServerObserver} adapter that wrap all calls to be sure there is "safe" according to the given policies
+ * {@link RegionServerObserver} proxy that wrap all calls to be sure there is "safe" according to the given policies
  * <br>
- * See {@link CoprocessorPolicyAdapter} for more details.
+ * See {@link CoprocessorPolicyProxy} for more details.
  */
 @Slf4j
-public class RegionServerObserverPolicyAdapter<T extends RegionServerObserver> extends CoprocessorPolicyAdapter<T> implements RegionServerObserver {
+public class RegionServerObserverPolicyProxy<T extends RegionServerObserver> extends CoprocessorPolicyProxy<T> implements RegionServerObserver {
 
 	/**
 	 * Constructor
@@ -30,7 +30,7 @@ public class RegionServerObserverPolicyAdapter<T extends RegionServerObserver> e
 	 * @param adaptee  coprocessor adaptee
 	 * @param policies default policies to apply
 	 */
-	public RegionServerObserverPolicyAdapter(@NonNull T adaptee, @NonNull List<Policy> policies) {
+	public RegionServerObserverPolicyProxy(@NonNull T adaptee, @NonNull List<Policy> policies) {
 		super(adaptee, policies);
 	}
 
