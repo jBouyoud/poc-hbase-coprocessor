@@ -43,7 +43,7 @@ public class PoliciesHelper {
 		List interfaces = ClassUtils.getAllInterfaces(coprocessor.getClass());
 		Class[] ifaces = (Class[]) interfaces.toArray(new Class[interfaces.size()]);
 
-		LOGGER.info("Create a PolicyVerifier on Coprocessor : [{}]", coprocessor);
+		LOGGER.debug("Create a PolicyVerifier on Coprocessor : [{}]", coprocessor);
 		// Create a proxy for the current coprocessor based on each interfaces
 		return (Coprocessor) Proxy.newProxyInstance(
 				coprocessor.getClass().getClassLoader(), ifaces,

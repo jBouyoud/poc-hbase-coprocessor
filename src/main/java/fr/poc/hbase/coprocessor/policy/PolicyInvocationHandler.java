@@ -65,7 +65,7 @@ public class PolicyInvocationHandler<T extends Coprocessor> extends PolicyVerifi
 				|| method.getDeclaringClass().isAssignableFrom(SingletonCoprocessorService.class))
 				&& method.getReturnType().isAssignableFrom(Service.class)) {
 			Service service = (Service) method.invoke(getAdaptee(), args);
-			LOGGER.info("Create a ServicePolicyProxy on CoprocessorService [{}]", service);
+			LOGGER.debug("Create a ServicePolicyProxy on CoprocessorService [{}]", service);
 			return new ServicePolicyProxy(service, getPolicies());
 		}
 

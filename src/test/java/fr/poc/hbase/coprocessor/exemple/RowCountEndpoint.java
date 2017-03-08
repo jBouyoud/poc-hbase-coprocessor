@@ -114,7 +114,7 @@ public final class RowCountEndpoint extends RowCounterProtos.RowCountService
 				results.clear();
 			} while (hasMore);
 			if(count > 20_000){
-				Thread.sleep(10_000);
+				Thread.sleep(2_000);
 			}
 		} catch (InterruptedException e) {
 			throw new IllegalStateException("Random timer interrupted", e);
