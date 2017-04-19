@@ -13,14 +13,10 @@ import java.io.IOException;
 public final class WrappedIOException extends RuntimeException {
 
 	/**
-	 * Constructor
-	 *
-	 * @param message exception message
+	 * Serial Version UID
 	 */
-	public WrappedIOException(String message) {
-		super(message);
-	}
-
+	private static final long serialVersionUID = 1937393173605326986L;
+	
 	/**
 	 * Constructor
 	 *
@@ -36,7 +32,7 @@ public final class WrappedIOException extends RuntimeException {
 	 * @return the wrapped {@link IOException}
 	 */
 	@Override
-	public synchronized IOException getCause() {
+	public IOException getCause() {
 		return (IOException) super.getCause();
 	}
 }

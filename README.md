@@ -135,9 +135,6 @@ Cons: HBase bytecode modification
 - Check/improve adaptation of multi coprocessor type (Master / Region, etc.) at Compile time
 - Tests all coprocessors adapted methods
 
-#### For runtime solution
-- Run AgentTests in gradle (actually don't run them because they breaks down without policies test)
-
 ## Setup
 
 If you want to run integration tests outside gradle environment, 

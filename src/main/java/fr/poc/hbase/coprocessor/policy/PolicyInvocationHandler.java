@@ -55,9 +55,11 @@ public class PolicyInvocationHandler<T extends Coprocessor> extends PolicyVerifi
 
 		if (method.getDeclaringClass().isAssignableFrom(Coprocessor.class)
 				&& "stop".equals(method.getName())) {
-			Object res = method.invoke(getAdaptee(), args);
-			close();
-			return res;
+			try {
+				return method.invoke(getAdaptee(), args);
+			} finally {
+				close();
+			}
 		}
 
 		// Special case for protobuf services

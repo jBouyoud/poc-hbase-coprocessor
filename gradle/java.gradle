@@ -1,6 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'jacoco'
-apply plugin: 'maven'
 
 // Set Java specifications
 sourceCompatibility = JavaVersion.VERSION_1_8

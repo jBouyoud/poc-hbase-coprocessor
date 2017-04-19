@@ -98,6 +98,10 @@ public class LimitRetryPolicy implements Policy {
 	 */
 	public static final class ServerSideRetriesExhaustedException extends DoNotRetryIOException {
 
+		/**
+		 * Serial Version UID
+		 */
+		private static final long serialVersionUID = 6416967768630970006L;
 
 		/**
 		 * Default constructor

@@ -18,7 +18,7 @@ public class CountTestUtil {
 	public static final String[] FAMILIES = new String[]{
 			"colfam0", "colfam1", "colfam2", "colfam3"
 	};
-	public static final int REPEAT_COUNT = 10;
+	public static final int REPEAT_COUNT = 1;
 
 	public static void buildCountTestTable(@NonNull HBaseHelper helper, @NonNull String tableName) throws Exception {
 		helper.dropTable(tableName);

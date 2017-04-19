@@ -44,15 +44,13 @@ public class CoprocessorPolicyAgent {
 
 		if (instrumentation.isRetransformClassesSupported()) {
 			for (Class<?> loadedClass : instrumentation.getAllLoadedClasses()) {
-				if (loadedClass.getSuperclass() != null
-						&& loadedClass.getSuperclass().isAssignableFrom(CoprocessorHost.class)) {
+				if (CoprocessorHost.class.isAssignableFrom(loadedClass)
+						&& instrumentation.isModifiableClass(loadedClass)) {
 
-					if (instrumentation.isModifiableClass(loadedClass)) {
-						try {
-							instrumentation.retransformClasses(loadedClass);
-						} catch (UnmodifiableClassException ex) {
-							LOGGER.info("Class {} is not transformable, ignore it", loadedClass.getName(), ex);
-						}
+					try {
+						instrumentation.retransformClasses(loadedClass);
+					} catch (UnmodifiableClassException ex) {
+						LOGGER.info("Class {} is not transformable, ignore it", loadedClass.getName(), ex);
 					}
 				}
 			}

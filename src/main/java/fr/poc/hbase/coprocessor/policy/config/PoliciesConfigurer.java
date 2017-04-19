@@ -77,7 +77,7 @@ public class PoliciesConfigurer {
 	public List<Policy> getPolicies() {
 		// TODO Implements me !!!
 		return Arrays.asList(
-				new TimeoutPolicy(2, TimeUnit.SECONDS),
+				new TimeoutPolicy(3, TimeUnit.SECONDS),
 				new LoggingPolicy(),
 				new MetricsPolicy(DefaultMetricsSystem.instance(), "Coprocessors"),
 				new LimitRetryPolicy(2, new LimitRetryPolicy.RollingInMemoryCache(10, TimeUnit.MINUTES)),
