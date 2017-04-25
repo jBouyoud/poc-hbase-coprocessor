@@ -37,8 +37,11 @@ public class CoprocessorPolicyProxy<T extends Coprocessor> extends PolicyVerifie
 
 	@Override
 	public void stop(CoprocessorEnvironment env) throws IOException {
-		runWithPolicies("stop", () -> getAdaptee().stop(env), env);
-		close();
+		try {
+			runWithPolicies("stop", () -> getAdaptee().stop(env), env);
+		} finally {
+			close();
+		}
 	}
 
 }
