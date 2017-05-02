@@ -181,6 +181,6 @@ $ gradlew test
 
 	```sh
 	$ disable 'table'
-	$ alter 'table, 'coprocessor' => '|org.apache.hadoop.hbase.coprocessor.AggregateImplementation||'
+	$ alter 'table', 'coprocessor' => '|org.apache.hadoop.hbase.coprocessor.AggregateImplementation||'
 	$ enable 'table'
 	```
